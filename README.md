@@ -79,6 +79,7 @@ Better Auth is mounted at `/api/auth/*` and provides email/password sign-up, sig
 - `GET /api/v1/library` lists the signed-in reader’s saved published stories.
 - `POST /api/v1/library/:storySlug` saves a published story; `DELETE` removes it.
 - `GET /api/v1/reading-progress` lists the reader’s latest chapter progress.
+- `GET /api/v1/reading-progress/:chapterId` loads the saved position for a chapter.
 - `PUT /api/v1/reading-progress/:chapterId` upserts progress for a published chapter (ratio from 0 to 1).
 
 New accounts receive the READER role. The role is server-owned and cannot be selected during public sign-up. Creator, moderator and admin access must be granted through a trusted administrative operation; no public role-escalation endpoint is provided.

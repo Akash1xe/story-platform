@@ -16,11 +16,13 @@ export default function PublicStoryReader({ data }: PublicStoryReaderProps) {
   useEffect(() => {
     if (isPending || !session) return;
     let timeout: ReturnType<typeof setTimeout> | undefined;
+    let disposed = false;
     let lastSavedPercent = -1;
+
     const saveProgress = () => {
       const root = document.documentElement;
       const maxScroll = Math.max(0, root.scrollHeight - window.innerHeight);
-      const ratio = maxScroll === 0 ? 1 : Math.min(1, Math.max(0, window.scrollY / maxScroll));
+      const ratio = maxScroll === 0 ? 0 : Math.min(1, Math.max(0, window.scrollY / maxScroll));
       const percent = Math.round(ratio * 100);
       if (percent === lastSavedPercent) return;
       if (timeout) clearTimeout(timeout);
@@ -33,10 +35,34 @@ export default function PublicStoryReader({ data }: PublicStoryReaderProps) {
         });
       }, 900);
     };
-    saveProgress();
-    window.addEventListener("scroll", saveProgress, { passive: true });
-    window.addEventListener("resize", saveProgress);
+
+    const attachListeners = () => {
+      if (disposed) return;
+      window.addEventListener("scroll", saveProgress, { passive: true });
+      window.addEventListener("resize", saveProgress);
+      saveProgress();
+    };
+
+    void fetch(`/api/v1/reading-progress/${encodeURIComponent(chapter.id)}`, {
+      credentials: "include", cache: "no-store",
+    }).then(async (response) => {
+      if (!response.ok) return null;
+      return await response.json() as { progress: { progressRatio: number } | null };
+    }).then((result) => {
+      if (disposed) return;
+      const ratio = result?.progress?.progressRatio ?? 0;
+      requestAnimationFrame(() => {
+        if (disposed) return;
+        const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        window.scrollTo({ top: maxScroll * ratio, behavior: "auto" });
+        requestAnimationFrame(attachListeners);
+      });
+    }).catch(() => {
+      attachListeners();
+    });
+
     return () => {
+      disposed = true;
       window.removeEventListener("scroll", saveProgress);
       window.removeEventListener("resize", saveProgress);
       if (timeout) clearTimeout(timeout);
@@ -56,7 +82,7 @@ export default function PublicStoryReader({ data }: PublicStoryReaderProps) {
       <main className={isComic ? "reader-main reader-main--comic" : "reader-main"}>
         <div className="reader-heading"><div className="reader-kicker">{isComic ? "COMIC EPISODE" : "CHAPTER"} <span>·</span> {String(chapter.number).padStart(2, "0")}</div><h1>{chapter.title}</h1><p>{story.title}</p></div>
         {isComic ? <section className="comic-reader" aria-label="Comic panels">{chapter.panels.map((panel) => <figure className="public-comic-panel" key={panel.id}><img src={panel.imageUrl} alt={panel.altText || panel.caption || `${chapter.title}, panel ${panel.position}`} loading="lazy" />{panel.caption && <figcaption>{panel.caption}</figcaption>}</figure>)}</section> : (
-          <article className={`reader-prose reader-prose--scale-${fontScale}`} aria-label="Chapter text">{(chapter.body ?? "").split(/\\n\\s*\\n/).filter(Boolean).map((paragraph, index) => <p className={index === 0 ? "reader-prose-opening" : ""} key={index}>{paragraph}</p>)}</article>
+          <article className={`reader-prose reader-prose--scale-${fontScale}`} aria-label="Chapter text">{(chapter.body ?? "").split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => <p className={index === 0 ? "reader-prose-opening" : ""} key={index}>{paragraph}</p>)}</article>
         )}
         <nav className="public-reader-footer" aria-label="Chapter navigation"><Link href={`/stories/${story.slug}`}>Back to all chapters <ArrowLeft size={15} /></Link></nav>
       </main>

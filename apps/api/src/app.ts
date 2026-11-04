@@ -57,9 +57,9 @@ app.get("/api/v1/me", requireAuthenticatedUser, (_request, response) => {
 });
 
 app.use("/api/v1/stories", publicStoriesRouter);
-app.use("/api/v1", readerLibraryRouter);
 app.use("/api/v1/creator/stories", creatorStoriesRouter);
 app.use("/api/v1/moderation/reviews", moderationRouter);
+app.use("/api/v1", readerLibraryRouter);
 
 app.use((_request, response) => {
   response.status(404).json({

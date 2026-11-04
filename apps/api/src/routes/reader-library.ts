@@ -89,6 +89,21 @@ router.get("/reading-progress", async (_request, response, next) => {
   } catch (error) { next(error); }
 });
 
+router.get("/reading-progress/:chapterId", async (request, response, next) => {
+  try {
+    const progress = await prisma.readingProgress.findFirst({
+      where: {
+        userId: userId(response),
+        chapterId: request.params.chapterId,
+        story: publishedStoryWhere,
+        chapter: { is: { isPublished: true } },
+      },
+      select: { progressRatio: true, lastReadAt: true, chapterId: true },
+    });
+    response.status(200).json({ progress });
+  } catch (error) { next(error); }
+});
+
 const progressSchema = z.object({ progressRatio: z.number().min(0).max(1) });
 router.put("/reading-progress/:chapterId", async (request, response, next) => {
   try {
