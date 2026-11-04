@@ -91,6 +91,7 @@ export default function HomePage() {
             <Link className="nav-active" href="/">Home</Link>
             <Link href="#discover">Discover</Link>
             <Link href="#genres">Genres</Link>
+            <Link href="/library">My Library</Link>
             <Link href="#creators">Creators</Link>
           </nav>
 
@@ -448,9 +449,9 @@ export default function HomePage() {
           <Compass size={19} />
           <span>Discover</span>
         </Link>
-        <Link href="#collection">
+        <Link href="/library">
           <Bookmark size={19} />
-          <span>Stories</span>
+          <span>My Library</span>
         </Link>
         <Link href="#creator">
           <UserRound size={19} />

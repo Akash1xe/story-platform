@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useReaderLibrary } from "@/hooks/use-reader-library";
 import { ArrowUpRight, Bookmark, Clock3 } from "lucide-react";
 import type { Story } from "@/lib/demo-content";
 
@@ -10,7 +10,8 @@ type StoryCardProps = {
 };
 
 export default function StoryCard({ story }: StoryCardProps) {
-  const [saved, setSaved] = useState(false);
+  const { library, isReady, toggleSavedStory } = useReaderLibrary();
+  const saved = library.savedStoryIds.includes(story.id);
 
   return (
     <article className="story-card">
@@ -33,9 +34,10 @@ export default function StoryCard({ story }: StoryCardProps) {
         <button
           type="button"
           className={"save-button" + (saved ? " is-saved" : "")}
-          aria-label={saved ? "Remove saved preview" : "Save story preview"}
+          aria-label={saved ? `Remove ${story.title} from My Library` : `Save ${story.title} to My Library`}
           aria-pressed={saved}
-          onClick={() => setSaved((current) => !current)}
+          disabled={!isReady}
+          onClick={() => toggleSavedStory(story.id)}
         >
           <Bookmark size={16} fill={saved ? "currentColor" : "none"} />
         </button>
