@@ -324,6 +324,16 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
           panelUrls: chapter.panelUrls,
         })),
       });
+
+      // Keep the database ID immediately so a failed submit can be retried
+      // without accidentally creating a second story.
+      setSavedStoryId(saved.id);
+      setStories((current) => [
+        saved,
+        ...current.filter((story) => story.id !== saved.id),
+      ]);
+      if (!storyId) router.replace("/creator/" + saved.id);
+
       const result = nextStatus === "In review"
         ? await submitCreatorStory(saved.id)
         : saved;
@@ -332,12 +342,6 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
         result,
         ...current.filter((story) => story.id !== result.id),
       ]);
-      setSavedStoryId(result.id);
-
-      if (!storyId) {
-        router.replace("/creator/" + result.id);
-      }
-
       setNotice(
         nextStatus === "In review"
           ? "Your story has been submitted. It is now saved in the moderator review queue."
