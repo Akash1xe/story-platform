@@ -105,10 +105,6 @@ export default function HomePage() {
                 placeholder="Search stories..."
               />
             </label>
-            <Link href="/creator" className="creator-button">
-              <PenLine size={14} />
-              Start creating
-            </Link>
             <Link
               href="#profile"
               className="profile-button"
