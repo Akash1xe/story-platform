@@ -75,8 +75,7 @@ Better Auth is mounted at `/api/auth/*` and provides email/password sign-up, sig
 - `GET /api/v1/creator/stories/:storyId` loads one owned story and its chapters.
 - `PUT /api/v1/creator/stories/:storyId` saves a draft and replaces its ordered chapter/panel content.
 - `POST /api/v1/creator/stories/:storyId/submit` validates and submits a draft for moderation.
-- `GET /api/v1/moderation/reviews?filter=Pending|Reviewed|All` lists the moderator queue and review history.
-- `POST /api/v1/moderation/reviews/:storyId/decision` records an approval or change request.
+- `GET /api/v1/moderation/reviews` lists submissions for moderators and admins.
 
 New accounts receive the READER role. The role is server-owned and cannot be selected during public sign-up. Creator, moderator and admin access must be granted through a trusted administrative operation; no public role-escalation endpoint is provided.
 
@@ -84,18 +83,9 @@ New accounts receive the READER role. The role is server-owned and cannot be sel
 
 Creator stories, genres, chapters and comic panel URLs are saved in PostgreSQL and scoped to the signed-in author. Drafts can be opened from another device after signing in. The API validates story/chapter fields, validates HTTP(S) panel URLs, and checks that a story has a title, synopsis, genre and at least one complete chapter before submission.
 
-Only DRAFT stories can be edited or submitted. A moderator can approve a submission, which marks the story and its chapters as published, or request changes, which returns it to DRAFT with a persisted review note. Only MODERATOR and ADMIN accounts can review submissions. The UI uses image URLs for comic panels and covers; file uploads and object storage are not part of this milestone.
+Only DRAFT stories can be edited or submitted. Once submitted, the story is locked until a moderator decision workflow is connected. The UI uses image URLs for comic panels and covers; file uploads and object storage are not part of this milestone.
 
-The Admin Review screen reads submissions and review history from PostgreSQL. Decisions are persisted with the moderator and timestamp.
-
-
-## Public discovery and reading
-
-- `GET /api/v1/stories` lists published stories with search, genre, format, publication status, sorting and pagination filters.
-- `GET /api/v1/stories/:slug` returns a published story and its published chapter list.
-- `GET /api/v1/stories/:slug/chapters/:chapterNumber` returns the selected published chapter, including prose content or ordered comic panel image URLs.
-
-Public endpoints only return stories with `PUBLISHED` status and at least one published chapter. The Discover catalog, story detail pages and chapter reader use these endpoints; draft and in-review content is not exposed publicly.
+The existing Admin Review screen still uses its local prototype data for review decisions. The API submission is available through the moderator queue endpoint, but database-backed moderation actions and replacing the local queue UI are a follow-up milestone.
 
 ## Website authentication and route protection
 

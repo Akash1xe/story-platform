@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import type { Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../lib/database.js";
 
 const router = Router();
@@ -44,7 +45,7 @@ router.get("/", async (request, response, next) => {
     }
 
     const { q, genre, format, status, sort, page, limit } = parsed.data;
-    const where = {
+    const where: Prisma.StoryWhereInput = {
       ...publishedStoryWhere,
       ...(format ? { format } : {}),
       ...(status ? { publicationStatus: status } : {}),
@@ -59,7 +60,7 @@ router.get("/", async (request, response, next) => {
       } : {}),
     };
 
-    const orderBy =
+    const orderBy: Prisma.StoryOrderByWithRelationInput[] =
       sort === "oldest"
         ? [{ publishedAt: "asc" as const }, { createdAt: "asc" as const }]
         : sort === "title"
