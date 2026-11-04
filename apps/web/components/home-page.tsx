@@ -17,8 +17,7 @@ import StoryCard from "@/components/story-card";
 import {
   demoStories,
   featuredStory,
-  genres,
-  type Story
+  genres
 } from "@/lib/demo-content";
 
 type DurationFilter = 3 | 5 | 10 | null;
