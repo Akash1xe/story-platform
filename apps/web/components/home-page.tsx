@@ -89,7 +89,7 @@ export default function HomePage() {
 
           <nav className="desktop-nav" aria-label="Main navigation">
             <Link className="nav-active" href="/">Home</Link>
-            <Link href="#discover">Discover</Link>
+            <Link href="/discover">Discover</Link>
             <Link href="#genres">Genres</Link>
             <Link href="/library">My Library</Link>
             <Link href="#creators">Creators</Link>
@@ -445,7 +445,7 @@ export default function HomePage() {
           <BookOpen size={19} />
           <span>Home</span>
         </Link>
-        <Link href="#discover">
+        <Link href="/discover">
           <Compass size={19} />
           <span>Discover</span>
         </Link>

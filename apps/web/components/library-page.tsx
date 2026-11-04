@@ -37,12 +37,12 @@ export default function LibraryPage() {
           </Link>
           <nav className="desktop-nav" aria-label="Main navigation">
             <Link href="/">Home</Link>
-            <Link href="/#discover">Discover</Link>
+            <Link href="/discover">Discover</Link>
             <Link href="/#genres">Genres</Link>
             <Link className="nav-active" href="/library">My Library</Link>
           </nav>
           <div className="header-actions">
-            <Link href="/#collection" className="creator-button"><Compass size={14} /> Discover stories</Link>
+            <Link href="/discover" className="creator-button"><Compass size={14} /> Discover stories</Link>
           </div>
         </div>
       </header>
@@ -99,7 +99,7 @@ export default function LibraryPage() {
                 <div className="library-empty library-empty--compact">
                   <Clock3 size={21} />
                   <div><h3>No reading in progress</h3><p>Open a story and your reading progress will appear here.</p></div>
-                  <Link href="/#collection">Find a story <ArrowRight size={14} /></Link>
+                  <Link href="/discover">Find a story <ArrowRight size={14} /></Link>
                 </div>
               )}
             </section>
@@ -115,7 +115,7 @@ export default function LibraryPage() {
                   <Bookmark size={23} />
                   <h3>Your library is waiting for its first story</h3>
                   <p>Use the bookmark icon on any story card to save it here.</p>
-                  <Link className="button-primary" href="/#collection">Explore stories <ArrowRight size={15} /></Link>
+                  <Link className="button-primary" href="/discover">Explore stories <ArrowRight size={15} /></Link>
                 </div>
               )}
             </section>
