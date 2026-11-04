@@ -3,10 +3,11 @@ import express, { type NextFunction, type Request, type Response } from "express
 import helmet from "helmet";
 import { toNodeHandler } from "better-auth/node";
 import { env } from "./config/env.js";
-import { requireAuthenticatedUser, requireRoles, type AuthSession } from "./middleware/auth.js";
+import { requireAuthenticatedUser, type AuthSession } from "./middleware/auth.js";
 import { auth } from "./lib/auth.js";
 import { prisma } from "./lib/database.js";
 import creatorStoriesRouter from "./routes/creator-stories.js";
+import moderationRouter from "./routes/moderation.js";
 
 export const app = express();
 
@@ -54,59 +55,7 @@ app.get("/api/v1/me", requireAuthenticatedUser, (_request, response) => {
 });
 
 app.use("/api/v1/creator/stories", creatorStoriesRouter);
-
-app.get(
-  "/api/v1/moderation/reviews",
-  requireAuthenticatedUser,
-  requireRoles("MODERATOR", "ADMIN"),
-  async (_request, response, next) => {
-    try {
-      const submissions = await prisma.story.findMany({
-        where: { status: "IN_REVIEW" },
-        select: {
-          id: true,
-          slug: true,
-          title: true,
-          synopsis: true,
-          format: true,
-          coverImageUrl: true,
-          createdAt: true,
-          updatedAt: true,
-          author: {
-            select: {
-              id: true,
-              displayName: true,
-            },
-          },
-          chapters: {
-            select: {
-              id: true,
-              number: true,
-              title: true,
-              body: true,
-              panels: {
-                select: {
-                  id: true,
-                  position: true,
-                  imageUrl: true,
-                  altText: true,
-                  caption: true,
-                },
-                orderBy: { position: "asc" },
-              },
-            },
-            orderBy: { number: "asc" },
-          },
-        },
-        orderBy: { updatedAt: "asc" },
-      });
-
-      response.status(200).json({ submissions });
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+app.use("/api/v1/moderation/reviews", moderationRouter);
 
 app.use((_request, response) => {
   response.status(404).json({

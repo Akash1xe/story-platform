@@ -19,6 +19,7 @@ export type CreatorStory = {
   coverImage: string;
   reviewStatus: CreatorReviewStatus;
   reviewNote: string;
+  authorName?: string;
   chapters: CreatorChapter[];
   createdAt: number;
   updatedAt: number;
