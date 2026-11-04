@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, BookOpen, Minus, Plus, Sun } from "lucide-react";
-import type { PublicStoryPageData } from "@/lib/public-stories";
+import type { PublicChapter, PublicStoryPageData } from "@/lib/public-stories";
 
 type PublicStoryReaderProps = {
   data: PublicStoryPageData;
