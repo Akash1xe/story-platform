@@ -12,7 +12,6 @@ import {
   Clock3,
   Eye,
   FileText,
-  Image as ImageIcon,
   Layers3,
   NotebookPen,
   Plus,
@@ -202,8 +201,13 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
       setError("Add some chapter text before saving it.");
       return;
     }
-    if (format === "Comic" && !panelUrlsText.split(/\r?\n/).map((url) => url.trim()).filter(Boolean).length) {
+    const panelUrls = panelUrlsText.split(/\r?\n/).map((url) => url.trim()).filter(Boolean);
+    if (format === "Comic" && panelUrls.length === 0) {
       setError("Add at least one panel image URL for this comic episode.");
+      return;
+    }
+    if (format === "Comic" && panelUrls.some((url) => !/^https?:\/\//i.test(url))) {
+      setError("Panel images must use public HTTP or HTTPS URLs.");
       return;
     }
 
@@ -212,7 +216,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
       id: editingChapterId ?? makeId(),
       title: chapterTitle.trim(),
       body: chapterBody.trim(),
-      panelUrls: panelUrlsText.split(/\r?\n/).map((url) => url.trim()).filter(Boolean),
+      panelUrls,
       updatedAt: timestamp
     };
     setChapters((current) => {
@@ -249,8 +253,8 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
         setError("Add at least one complete chapter or episode before submitting.");
         return;
       }
-      if (format === "Comic" && chapters.some((chapter) => chapter.panelUrls.length === 0)) {
-        setError("Every comic episode needs at least one panel image URL.");
+      if (format === "Comic" && chapters.some((chapter) => chapter.panelUrls.length === 0 || chapter.panelUrls.some((url) => !/^https?:\/\//i.test(url)))) {
+        setError("Every comic episode needs panel images using public HTTP or HTTPS URLs.");
         return;
       }
     }
@@ -297,7 +301,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
     return <><CreatorHeader active="studio" /><main className="creator-shell"><div className="creator-empty"><AlertCircle size={25} /><h2>Draft not found</h2><p>This story may have been removed from this browser.</p><Link className="button-primary" href="/creator">Back to Creator Studio</Link></div></main></>;
   }
 
-  if (isLocked) {
+  if (isLocked && existingStory) {
     return <><CreatorHeader active="studio" /><main className="creator-shell"><div className="creator-breadcrumb"><Link href="/creator"><ArrowLeft size={14} /> Creator Studio</Link></div><div className="creator-locked"><CheckCircle2 size={28} /><span className={statusClass(existingStory.reviewStatus)}>{existingStory.reviewStatus}</span><h1>{existingStory.title}</h1><p>{existingStory.reviewStatus === "Approved" ? "This draft is marked approved in the local prototype." : "This draft has been submitted and is read-only while it is in the review state."}</p><Link className="button-secondary" href="/creator">Back to your stories</Link></div></main></>;
   }
 
