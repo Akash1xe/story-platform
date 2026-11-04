@@ -2710,3 +2710,37 @@ input:focus-visible {
 /* Live homepage catalog */
 .home-catalog-message { margin:0 0 16px; padding:12px 14px; border:1px solid #62484a; border-radius:9px; background:#241a20; color:#e2b7bb; font-size:10px; line-height:1.6; }
 .home-view-all { display:flex; justify-content:flex-end; margin-top:22px; }
+
+
+/* Public creator profiles */
+.creator-profile-shell { width:min(1180px,calc(100% - 48px)); margin:0 auto; padding:26px 0 76px; }
+.creator-profile-hero { position:relative; display:flex; align-items:center; gap:25px; min-height:210px; margin-top:10px; padding:30px 34px; overflow:hidden; border:1px solid #403751; border-radius:18px; background:radial-gradient(circle at 88% 15%,#8e6bd52b,transparent 32%),linear-gradient(115deg,#201a2e,#171b27 75%); }
+.creator-profile-avatar { width:108px; height:108px; flex:0 0 108px; display:grid; place-items:center; overflow:hidden; border:1px solid #675784; border-radius:50%; background:#282238; color:#ddceff; }
+.creator-profile-avatar img { width:100%; height:100%; object-fit:cover; }
+.creator-profile-avatar>span { font-size:34px; font-weight:750; letter-spacing:-1px; }
+.creator-profile-copy { min-width:0; flex:1; }
+.creator-profile-copy h1 { margin:10px 0 7px; font-size:clamp(30px,4vw,43px); letter-spacing:-1.8px; }
+.creator-profile-copy>p { margin:0; color:#b9b6c5; font-size:12px; line-height:1.7; }
+.creator-profile-meta { display:flex; flex-wrap:wrap; gap:17px; margin-top:17px; color:#a8a5b5; font-size:10px; }
+.creator-profile-meta span { display:inline-flex; align-items:center; gap:7px; }
+.creator-profile-meta svg { color:#c1adff; }
+.creator-profile-mark { width:100px; height:95px; flex:0 0 100px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border:1px solid #62527e; border-radius:14px; background:#2a2339a8; color:#d4c7f5; }
+.creator-profile-mark span { font-size:8px; font-weight:800; line-height:1.6; letter-spacing:1.2px; text-align:center; }
+.creator-profile-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:17px; }
+.creator-profile-stats article { display:flex; flex-direction:column; gap:7px; min-height:80px; padding:15px 17px; border:1px solid var(--border); border-radius:11px; background:#151a24; }
+.creator-profile-stats span { color:#a5a8b5; font-size:9px; }
+.creator-profile-stats strong { color:#f2eef9; font-size:22px; line-height:1; }
+.creator-profile-works { margin-top:43px; }
+.creator-profile-total { display:inline-flex; align-items:center; gap:7px; color:#bcb2d4; font-size:10px; }
+.creator-profile-total svg { color:#c1adff; }
+@media(max-width:700px) {
+  .creator-profile-shell { width:calc(100% - 32px); padding-top:18px; }
+  .creator-profile-hero { min-height:0; align-items:flex-start; gap:16px; padding:22px 19px; }
+  .creator-profile-avatar { width:76px; height:76px; flex-basis:76px; }
+  .creator-profile-avatar>span { font-size:25px; }
+  .creator-profile-mark { display:none; }
+  .creator-profile-copy h1 { font-size:28px; }
+  .creator-profile-meta { flex-direction:column; gap:8px; margin-top:12px; }
+  .creator-profile-stats { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .creator-profile-stats article { min-height:72px; padding:12px; }
+}
