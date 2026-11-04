@@ -2,7 +2,13 @@ import { z } from "zod";
 
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),
-  BETTER_AUTH_SECRET: z.string().min(32),
+  BETTER_AUTH_SECRET: z
+    .string()
+    .min(32)
+    .refine(
+      (secret) => secret !== "replace-this-with-a-random-secret-at-least-32-characters",
+      "Generate a unique BETTER_AUTH_SECRET before starting the API.",
+    ),
   BETTER_AUTH_URL: z.string().url().default("http://localhost:4000"),
   PORT: z.coerce.number().int().positive().default(4000),
   WEB_ORIGIN: z.string().url().default("http://localhost:3000"),
