@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   ArrowRight,
   BookOpen,
@@ -77,20 +78,20 @@ export default function HomePage() {
     <>
       <header className="site-header">
         <div className="header-inner">
-          <a href="#home" className="brand" aria-label="StoryWorld home">
+          <Link href="/" className="brand" aria-label="StoryWorld home">
             <span className="brand-icon">
               <BookOpen size={20} />
             </span>
             <span>
               StoryWorld<span className="brand-period">.</span>
             </span>
-          </a>
+          </Link>
 
           <nav className="desktop-nav" aria-label="Main navigation">
-            <a className="nav-active" href="#home">Home</a>
-            <a href="#discover">Discover</a>
-            <a href="#genres">Genres</a>
-            <a href="#creators">Creators</a>
+            <Link className="nav-active" href="/">Home</Link>
+            <Link href="#discover">Discover</Link>
+            <Link href="#genres">Genres</Link>
+            <Link href="#creators">Creators</Link>
           </nav>
 
           <div className="header-actions">
@@ -103,17 +104,17 @@ export default function HomePage() {
                 placeholder="Search stories..."
               />
             </label>
-            <a href="#creator" className="creator-button">
+            <Link href="#creator" className="creator-button">
               <PenLine size={14} />
               Start creating
-            </a>
-            <a
+            </Link>
+            <Link
               href="#profile"
               className="profile-button"
               aria-label="Profile preview"
             >
               <UserRound size={18} />
-            </a>
+            </Link>
           </div>
         </div>
       </header>
@@ -188,12 +189,12 @@ export default function HomePage() {
             </div>
 
             <div className="hero-actions">
-              <a className="button-primary" href="#collection">
-                Explore stories <ArrowRight size={16} />
-              </a>
-              <a className="button-secondary" href="#creator">
+              <Link className="button-primary" href={`/stories/${featuredStory.id}`}>
+                View featured story <ArrowRight size={16} />
+              </Link>
+              <Link className="button-secondary" href="#creator">
                 Become a creator
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -268,7 +269,7 @@ export default function HomePage() {
 
             <div className="quick-story-list">
               {filteredQuickReads.map((story) => (
-                <div className="quick-story" key={story.id}>
+                <Link className="quick-story" href={`/stories/${story.id}`} key={story.id}>
                   <div
                     className="quick-art"
                     style={{ backgroundImage: "url('" + story.coverImage + "')" }}
@@ -280,7 +281,7 @@ export default function HomePage() {
                     <span>{story.genre} · {story.minutes} min</span>
                   </div>
                   <ArrowRight size={16} aria-hidden="true" />
-                </div>
+                </Link>
               ))}
               {filteredQuickReads.length === 0 && (
                 <p className="empty-message">
@@ -389,13 +390,13 @@ export default function HomePage() {
                 />
                 <div className="update-copy">
                   <span>{story.type} · {story.genre}</span>
-                  <h3>{story.title}</h3>
+                  <h3><Link href={`/stories/${story.id}`}>{story.title}</Link></h3>
                   <p>Created by {story.creator}</p>
                   <small>Example update layout · Sample content</small>
                 </div>
-                <span className="round-arrow" aria-hidden="true">
+                <Link className="round-arrow" href={`/stories/${story.id}`} aria-label={`View ${story.title}`}>
                   <ArrowRight size={17} />
-                </span>
+                </Link>
               </article>
             ))}
           </div>
@@ -413,48 +414,48 @@ export default function HomePage() {
               who will love your stories.
             </p>
           </div>
-          <a className="button-primary" href="#home">
+          <Link className="button-primary" href="#home">
             Creator Studio preview <ArrowRight size={16} />
-          </a>
+          </Link>
         </section>
 
         <footer className="site-footer" id="profile">
-          <a href="#home" className="brand">
+          <Link href="/" className="brand">
             <span className="brand-icon">
               <BookOpen size={19} />
             </span>
             <span>
               StoryWorld<span className="brand-period">.</span>
             </span>
-          </a>
+          </Link>
           <p>Read something extraordinary. Create something unforgettable.</p>
           <div className="footer-links">
-            <a href="#home">About</a>
-            <a href="#home">Community guidelines</a>
-            <a href="#home">Privacy</a>
-            <a href="#home">Terms</a>
+            <Link href="#home">About</Link>
+            <Link href="#home">Community guidelines</Link>
+            <Link href="#home">Privacy</Link>
+            <Link href="#home">Terms</Link>
           </div>
           <small>© 2026 StoryWorld · Temporary project identity</small>
         </footer>
       </main>
 
       <nav className="mobile-nav" aria-label="Mobile navigation">
-        <a href="#home" className="mobile-nav-active">
+        <Link href="#home" className="mobile-nav-active">
           <BookOpen size={19} />
           <span>Home</span>
-        </a>
-        <a href="#discover">
+        </Link>
+        <Link href="#discover">
           <Compass size={19} />
           <span>Discover</span>
-        </a>
-        <a href="#collection">
+        </Link>
+        <Link href="#collection">
           <Bookmark size={19} />
           <span>Stories</span>
-        </a>
-        <a href="#creator">
+        </Link>
+        <Link href="#creator">
           <UserRound size={19} />
           <span>Creator</span>
-        </a>
+        </Link>
       </nav>
     </>
   );

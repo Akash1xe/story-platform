@@ -9,7 +9,9 @@ export type Story = {
   minutes: number;
   coverImage: string;
   description: string;
-  status?: "Ongoing" | "Completed";
+  status: "Ongoing" | "Completed";
+  previewTitle: string;
+  previewParagraphs: string[];
 };
 
 export const featuredStory: Story = {
@@ -23,7 +25,13 @@ export const featuredStory: Story = {
   coverImage:
     "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1800&q=85",
   description:
-    "A forgotten map, a kingdom hidden beyond the mountains, and a choice that could change everything."
+    "A forgotten map, a kingdom hidden beyond the mountains, and a choice that could change everything.",
+  previewTitle: "The Map Beneath the Glass",
+  previewParagraphs: [
+    "The map was not drawn on paper. It was etched into a sheet of glass so thin that Mira could see the candlelight trembling through it. Every road ended at the same mountain, and every time she looked away, the mountain seemed to move.",
+    "Her grandfather had called it a warning. The royal archivists called it a myth. Tonight, with the palace gates sealed and footsteps climbing the stairs, Mira finally understood why he had hidden it.",
+    "A line of light appeared beneath the glass. It traced a path from the old city to a place that had been removed from every map in the kingdom. At its end, someone had written her name."
+  ]
 };
 
 export const demoStories: Story[] = [
@@ -37,7 +45,13 @@ export const demoStories: Story[] = [
     status: "Completed",
     coverImage:
       "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=800&q=85",
-    description: "One train, one missing passenger and a night full of secrets."
+    description: "One train, one missing passenger and a night full of secrets.",
+    previewTitle: "Platform Nine",
+    previewParagraphs: [
+      "The station clock stopped at 11:47, just as the last train pulled away. Ishan watched its red tail lights shrink into the rain, then noticed the woman still sitting on the opposite bench.",
+      "She had been there when he arrived. She had not moved, not even when the announcement named a train that had not appeared on the board for twenty years.",
+      "When the station lights flickered, the bench was empty. A folded ticket lay in its place, warm to the touch, with tomorrow's date printed across it."
+    ]
   },
   {
     id: "the-forgotten-kingdom",
@@ -49,7 +63,13 @@ export const demoStories: Story[] = [
     status: "Ongoing",
     coverImage:
       "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=85",
-    description: "A lost kingdom is waiting for its final heir."
+    description: "A lost kingdom is waiting for its final heir.",
+    previewTitle: "The Door in the Hill",
+    previewParagraphs: [
+      "At the top of the hill stood a door with no wall around it. Its bronze handle was polished, as if someone had opened it yesterday.",
+      "Kael placed the old crown against the lock. Deep below the grass, gears began to turn. The hill answered with a low, sleeping sound.",
+      "Beyond the doorway was not a room but a night sky, full of unfamiliar stars. A voice from the darkness spoke the name his family had forbidden him to use."
+    ]
   },
   {
     id: "letters-to-june",
@@ -61,7 +81,13 @@ export const demoStories: Story[] = [
     status: "Ongoing",
     coverImage:
       "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=800&q=85",
-    description: "Some letters arrive years after they were written."
+    description: "Some letters arrive years after they were written.",
+    previewTitle: "The Blue Envelope",
+    previewParagraphs: [
+      "The envelope was waiting beneath the door when June came home. No stamp, no return address, only her name written in the handwriting she had spent six years trying to forget.",
+      "She made tea before opening it. It was an old habit from the days when difficult news arrived by post and there was always time to let the kettle boil.",
+      "Inside was a single line: I kept the promise, even when you stopped asking."
+    ]
   },
   {
     id: "beyond-the-stars",
@@ -73,7 +99,13 @@ export const demoStories: Story[] = [
     status: "Ongoing",
     coverImage:
       "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&q=85",
-    description: "A signal from space changes everything."
+    description: "A signal from space changes everything.",
+    previewTitle: "The Quiet Signal",
+    previewParagraphs: [
+      "At 03:16 UTC, every receiver on the far side of the moon recorded the same three notes. The signal lasted eleven seconds and repeated after exactly one hour.",
+      "Dr. Sato listened to it once, then again with the lights off. The pattern was not random. It was a countdown, and someone had started it before humanity learned to listen.",
+      "On the third replay, a fourth note appeared. The observatory's oldest screen lit up with a message in plain English: WE CAN SEE YOU NOW."
+    ]
   },
   {
     id: "the-empty-room",
@@ -85,7 +117,13 @@ export const demoStories: Story[] = [
     status: "Completed",
     coverImage:
       "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=85",
-    description: "There was never supposed to be a fifth room."
+    description: "There was never supposed to be a fifth room.",
+    previewTitle: "Room Five",
+    previewParagraphs: [
+      "The floor plan showed four rooms. The landlord showed me four rooms. I counted four doors every morning before leaving for work.",
+      "On Thursday, a fifth door appeared at the end of the hall. Its paint was still wet, and someone had written my childhood address on the brass plate.",
+      "I called the landlord. He answered on the first ring and whispered, without saying hello, that I must not open it again."
+    ]
   },
   {
     id: "one-last-summer",
@@ -97,7 +135,13 @@ export const demoStories: Story[] = [
     status: "Completed",
     coverImage:
       "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=85",
-    description: "A summer, a promise and a goodbye."
+    description: "A summer, a promise and a goodbye.",
+    previewTitle: "The Place We Promised",
+    previewParagraphs: [
+      "Every June, they returned to the same stretch of coast. The town had grown louder, the pier had lost two planks, and the little shop still sold the same orange ice cream.",
+      "This year, only Anya came. She brought the postcard they had written together at seventeen and left it beneath the blue stone.",
+      "The tide carried the message away slowly. For the first time, she did not wait for an answer."
+    ]
   },
   {
     id: "the-signal",
@@ -109,7 +153,13 @@ export const demoStories: Story[] = [
     status: "Completed",
     coverImage:
       "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&q=85",
-    description: "Something has been transmitting for two hundred years."
+    description: "Something has been transmitting for two hundred years.",
+    previewTitle: "A Voice in the Static",
+    previewParagraphs: [
+      "The broadcast had been buried under two centuries of static. When the restoration team cleaned the recording, they expected music, weather reports, perhaps a speech.",
+      "Instead, they heard a child counting down from ten. The voice was calm, close to the microphone, and unmistakably frightened.",
+      "At the end of the recording, the child said the exact date and time of the team's discovery. Then the studio microphone, unplugged since 1912, clicked on."
+    ]
   },
   {
     id: "midnight-coffee",
@@ -121,9 +171,21 @@ export const demoStories: Story[] = [
     status: "Completed",
     coverImage:
       "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&q=85",
-    description: "Two strangers meet at the same café every night."
+    description: "Two strangers meet at the same café every night.",
+    previewTitle: "One Table by the Window",
+    previewParagraphs: [
+      "The café closed at midnight, but the owner always left one table free for the woman with the yellow notebook. She never ordered until the rain began.",
+      "Across the room, a man came in every evening and wrote nothing at all. For three weeks they occupied the same silence without exchanging a word.",
+      "Tonight, he placed a second cup on her table. On the saucer was a note: I think we have been waiting for the same person."
+    ]
   }
 ];
+
+export const allStories: Story[] = [featuredStory, ...demoStories];
+
+export function getStoryBySlug(slug: string): Story | undefined {
+  return allStories.find((story) => story.id === slug);
+}
 
 export const genres = [
   "Action",
