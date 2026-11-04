@@ -21,7 +21,7 @@ const publishedStoryWhere = {
 };
 
 const catalogInclude = {
-  author: { select: { id: true, displayName: true } },
+  author: { select: { id: true, displayName: true, creatorHandle: true } },
   genres: { include: { genre: { select: { name: true, slug: true } } } },
   chapters: {
     where: { isPublished: true },
@@ -106,7 +106,7 @@ router.get("/:slug", async (request, response, next) => {
         ...publishedStoryWhere,
       },
       include: {
-        author: { select: { id: true, displayName: true } },
+        author: { select: { id: true, displayName: true, creatorHandle: true } },
         genres: { include: { genre: { select: { name: true, slug: true } } } },
         chapters: {
           where: { isPublished: true },

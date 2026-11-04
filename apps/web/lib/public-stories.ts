@@ -9,7 +9,7 @@ export type PublicStorySummary = {
   publicationStatus: "ONGOING" | "COMPLETED";
   coverImageUrl: string | null;
   publishedAt: string | null;
-  author: { id: string; displayName: string };
+  author: { id: string; displayName: string; creatorHandle: string | null };
   genres: Array<{ genre: { name: string; slug: string } }>;
   chapters: Array<{ id: string; number: number; title: string }>;
   _count?: { chapters: number };
@@ -31,6 +31,9 @@ export type PublicCreatorProfile = {
   id: string;
   displayName: string;
   avatarUrl: string | null;
+  handle: string | null;
+  bio: string | null;
+  websiteUrl: string | null;
   joinedAt: string;
   stories: PublicStorySummary[];
 };
@@ -121,7 +124,7 @@ function formatType(format: PublicStorySummary["format"]): StoryType {
 export function toCatalogStory(story: PublicStorySummary): Story {
   return {
     id: story.slug,
-    creatorId: story.author.id,
+    creatorId: story.author.creatorHandle ?? story.author.id,
     isPublished: true,
     title: story.title,
     creator: story.author.displayName,

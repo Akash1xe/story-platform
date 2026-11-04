@@ -472,6 +472,7 @@ function CreatorHeader({ active }: { active: "studio" }) {
           <Link href="/discover">Discover</Link>
           <Link href="/library">My Library</Link>
           <Link className={active === "studio" ? "nav-active" : ""} href="/creator">Creator Studio</Link>
+          <Link href="/creator/profile">Profile settings</Link>
         </nav>
         <div className="header-actions">
           <Link href="/creator/new" className="creator-button"><Plus size={14} /> New story</Link>
