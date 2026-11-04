@@ -104,7 +104,7 @@ export default function DiscoverPage() {
             <Link className="nav-active" href="/discover">Discover</Link>
             <Link href="/#genres">Genres</Link>
             <Link href="/library">My Library</Link>
-            <Link href="/#creators">Creators</Link>
+            <Link href="/creator">Creators</Link>
           </nav>
           <div className="header-actions">
             <Link href="/library" className="profile-button" aria-label="My Library">

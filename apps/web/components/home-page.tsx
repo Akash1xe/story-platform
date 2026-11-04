@@ -92,7 +92,7 @@ export default function HomePage() {
             <Link href="/discover">Discover</Link>
             <Link href="#genres">Genres</Link>
             <Link href="/library">My Library</Link>
-            <Link href="#creators">Creators</Link>
+            <Link href="/creator">Creators</Link>
           </nav>
 
           <div className="header-actions">
@@ -105,7 +105,7 @@ export default function HomePage() {
                 placeholder="Search stories..."
               />
             </label>
-            <Link href="#creator" className="creator-button">
+            <Link href="/creator" className="creator-button">
               <PenLine size={14} />
               Start creating
             </Link>
@@ -193,7 +193,7 @@ export default function HomePage() {
               <Link className="button-primary" href={`/stories/${featuredStory.id}`}>
                 View featured story <ArrowRight size={16} />
               </Link>
-              <Link className="button-secondary" href="#creator">
+              <Link className="button-secondary" href="/creator">
                 Become a creator
               </Link>
             </div>
@@ -453,7 +453,7 @@ export default function HomePage() {
           <Bookmark size={19} />
           <span>My Library</span>
         </Link>
-        <Link href="#creator">
+        <Link href="/creator">
           <UserRound size={19} />
           <span>Creator</span>
         </Link>
