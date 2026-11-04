@@ -1,5 +1,20 @@
 export type StoryType = "Comic" | "Novel" | "Short story";
 
+export type ComicPanelStyle =
+  | "archive"
+  | "mountain"
+  | "portal"
+  | "orbital"
+  | "signal";
+
+export type ComicPanel = {
+  id: string;
+  style: ComicPanelStyle;
+  scene: string;
+  dialogue?: string;
+  caption?: string;
+};
+
 export type Story = {
   id: string;
   title: string;
@@ -12,6 +27,7 @@ export type Story = {
   status: "Ongoing" | "Completed";
   previewTitle: string;
   previewParagraphs: string[];
+  comicPanels?: ComicPanel[];
 };
 
 export const featuredStory: Story = {
@@ -31,6 +47,29 @@ export const featuredStory: Story = {
     "The map was not drawn on paper. It was etched into a sheet of glass so thin that Mira could see the candlelight trembling through it. Every road ended at the same mountain, and every time she looked away, the mountain seemed to move.",
     "Her grandfather had called it a warning. The royal archivists called it a myth. Tonight, with the palace gates sealed and footsteps climbing the stairs, Mira finally understood why he had hidden it.",
     "A line of light appeared beneath the glass. It traced a path from the old city to a place that had been removed from every map in the kingdom. At its end, someone had written her name."
+  ],
+  comicPanels: [
+    {
+      id: "glass-1",
+      style: "archive",
+      scene: "A quiet archive lit by a single candle. Mira stands over a translucent map.",
+      caption: "The map was older than the kingdom itself.",
+      dialogue: "Every road ends at the same mountain."
+    },
+    {
+      id: "glass-2",
+      style: "mountain",
+      scene: "A vast mountain rises beyond a sleeping city beneath a violet night sky.",
+      caption: "Her grandfather had called it a warning. The royal archivists called it a myth.",
+      dialogue: "Then why does it keep moving?"
+    },
+    {
+      id: "glass-3",
+      style: "portal",
+      scene: "A glowing route appears on the glass and ends at a hidden doorway.",
+      caption: "At the end of the forgotten road, a name appeared.",
+      dialogue: "Mira."
+    }
   ]
 };
 
@@ -69,6 +108,29 @@ export const demoStories: Story[] = [
       "At the top of the hill stood a door with no wall around it. Its bronze handle was polished, as if someone had opened it yesterday.",
       "Kael placed the old crown against the lock. Deep below the grass, gears began to turn. The hill answered with a low, sleeping sound.",
       "Beyond the doorway was not a room but a night sky, full of unfamiliar stars. A voice from the darkness spoke the name his family had forbidden him to use."
+    ],
+    comicPanels: [
+      {
+        id: "kingdom-1",
+        style: "mountain",
+        scene: "A lone bronze door stands at the top of a hill under a storm-lit sky.",
+        caption: "At the top of the hill stood a door with no wall around it.",
+        dialogue: "Who built you?"
+      },
+      {
+        id: "kingdom-2",
+        style: "archive",
+        scene: "Kael presses an old crown against an intricate lock as gears turn below.",
+        caption: "The hill began to wake beneath his feet.",
+        dialogue: "This was never a crown. It was a key."
+      },
+      {
+        id: "kingdom-3",
+        style: "portal",
+        scene: "The doorway opens onto a deep star-filled sky.",
+        caption: "Beyond the door was a sky no map had ever recorded.",
+        dialogue: "Welcome home, final heir."
+      }
     ]
   },
   {
@@ -105,6 +167,29 @@ export const demoStories: Story[] = [
       "At 03:16 UTC, every receiver on the far side of the moon recorded the same three notes. The signal lasted eleven seconds and repeated after exactly one hour.",
       "Dr. Sato listened to it once, then again with the lights off. The pattern was not random. It was a countdown, and someone had started it before humanity learned to listen.",
       "On the third replay, a fourth note appeared. The observatory's oldest screen lit up with a message in plain English: WE CAN SEE YOU NOW."
+    ],
+    comicPanels: [
+      {
+        id: "stars-1",
+        style: "orbital",
+        scene: "A silent lunar observatory floats above the blue curve of Earth.",
+        caption: "03:16 UTC. Every receiver on the far side of the moon went silent.",
+        dialogue: "Signal detected."
+      },
+      {
+        id: "stars-2",
+        style: "signal",
+        scene: "A monitor glows in a dark control room as three bright waveforms appear.",
+        caption: "Three notes. Eleven seconds. Exactly one hour apart.",
+        dialogue: "That is not noise. It is a countdown."
+      },
+      {
+        id: "stars-3",
+        style: "orbital",
+        scene: "A vast shape emerges from darkness beyond the edge of the planet.",
+        caption: "On the third replay, a fourth note appeared.",
+        dialogue: "WE CAN SEE YOU NOW."
+      }
     ]
   },
   {

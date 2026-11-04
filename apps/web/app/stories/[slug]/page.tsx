@@ -112,8 +112,8 @@ export default async function StoryDetailsPage({ params }: StoryPageProps) {
             </div>
 
             <div className="detail-actions">
-              <Link className="button-primary" href="#reading-preview">
-                Read preview <ArrowRight size={16} />
+              <Link className="button-primary" href={`/stories/${story.id}/read`}>
+                Read sample {story.type === "Comic" ? "episode" : "chapter"} <ArrowRight size={16} />
               </Link>
               <Link className="button-secondary" href="/#collection">
                 Explore more stories
