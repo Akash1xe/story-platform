@@ -24,6 +24,7 @@ import {
   type CreatorReviewStatus,
   type CreatorStory
 } from "@/lib/creator-content";
+import { AuthNav } from "@/components/auth-nav";
 
 type ReviewFilter = "Pending" | "Reviewed" | "All";
 type ReviewDecision = "Approved" | "Changes requested";
@@ -153,6 +154,7 @@ export default function AdminReviewWorkspace() {
           </nav>
           <div className="header-actions">
             <Link href="/creator" className="creator-button">Creator workspace</Link>
+            <AuthNav />
           </div>
         </div>
       </header>

@@ -15,7 +15,8 @@
     "next": "16.4.5",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "tailwindcss": "^4.1.0"
+    "tailwindcss": "^4.1.0",
+    "better-auth": "^1.7.17"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

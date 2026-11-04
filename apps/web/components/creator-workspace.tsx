@@ -30,6 +30,7 @@ import {
   type CreatorStory
 } from "@/lib/creator-content";
 import { genres } from "@/lib/demo-content";
+import { AuthNav } from "@/components/auth-nav";
 
 type CreatorWorkspaceProps = {
   storyId?: string;
@@ -414,6 +415,7 @@ function CreatorHeader({ active }: { active: "studio" }) {
         </nav>
         <div className="header-actions">
           <Link href="/creator/new" className="creator-button"><Plus size={14} /> New story</Link>
+          <AuthNav />
         </div>
       </div>
     </header>
