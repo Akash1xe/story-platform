@@ -1,0 +1,14 @@
+{
+  "name": "story-platform",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter @story-platform/web dev",
+    "build:web": "pnpm --filter @story-platform/web build",
+    "lint:web": "pnpm --filter @story-platform/web lint",
+    "typecheck:web": "pnpm --filter @story-platform/web typecheck"
+  }
+}
