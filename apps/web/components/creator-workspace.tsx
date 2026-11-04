@@ -299,7 +299,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
         setError("Add at least one complete chapter or episode before submitting.");
         return;
       }
-      if (format === "Comic" && chapters.some((chapter) => chapter.panelUrls.length === 0 || chapter.panelUrls.some((url) => !/^https?:\\/\\//i.test(url)))) {
+      if (format === "Comic" && chapters.some((chapter) => chapter.panelUrls.length === 0 || chapter.panelUrls.some((url) => !/^https?:\/\//i.test(url)))) {
         setError("Every comic episode needs panel images using public HTTP or HTTPS URLs.");
         return;
       }
