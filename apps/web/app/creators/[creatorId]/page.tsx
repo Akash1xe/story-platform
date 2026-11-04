@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, BookOpen, CalendarDays, Layers3, PenLine, Sparkles } from "lucide-react";
 import StoryCard from "@/components/story-card";
 import { getPublicCreator, toCatalogStory } from "@/lib/public-stories";
+import profileStyles from "./profile.module.css";
 
 type PageProps = { params: Promise<{ creatorId: string }> };
 
@@ -48,7 +49,9 @@ export default async function PublicCreatorPage({ params }: PageProps) {
         <div className="creator-profile-copy">
           <span className="eyebrow"><Sparkles size={13} />STORYWORLD CREATOR</span>
           <h1>{creator.displayName}</h1>
-          <p>Published stories from an independent StoryWorld creator.</p>
+          {creator.handle && <p className={profileStyles.handle}>@{creator.handle}</p>}
+          <p>{creator.bio || "Independent creator sharing original stories on StoryWorld."}</p>
+          {creator.websiteUrl && <a className={profileStyles.website} href={creator.websiteUrl} target="_blank" rel="noreferrer noopener">Visit creator website</a>}
           <div className="creator-profile-meta"><span><CalendarDays size={14} /> On StoryWorld since {joinedDate}</span><span><BookOpen size={14} /> {stories.length} published {stories.length === 1 ? "story" : "stories"}</span></div>
         </div>
         <div className="creator-profile-mark"><PenLine size={25} /><span>CREATOR<br />PROFILE</span></div>

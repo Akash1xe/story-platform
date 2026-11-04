@@ -80,7 +80,9 @@ Better Auth is mounted at `/api/auth/*` and provides email/password sign-up, sig
 - `POST /api/v1/library/:storySlug` saves a published story; `DELETE` removes it.
 - `GET /api/v1/reading-progress` lists the reader’s latest chapter progress.
 - `GET /api/v1/reading-progress/:chapterId` loads the saved position for a chapter.
-- `GET /api/v1/creators/:creatorId` returns a public creator profile and their published stories.
+- `GET /api/v1/creators/:creatorId` returns a public creator profile and their published stories; the path accepts the creator ID or their custom handle.
+- `GET /api/v1/creator/profile` loads the signed-in creator’s profile settings.
+- `PUT /api/v1/creator/profile` updates the signed-in creator’s public name, avatar URL, unique handle, biography and website URL.
 - `PUT /api/v1/reading-progress/:chapterId` upserts progress for a published chapter (ratio from 0 to 1).
 
 New accounts receive the READER role. The role is server-owned and cannot be selected during public sign-up. Creator, moderator and admin access must be granted through a trusted administrative operation; no public role-escalation endpoint is provided.
@@ -91,7 +93,9 @@ Creator stories, genres, chapters and comic panel URLs are saved in PostgreSQL a
 
 Only DRAFT stories can be edited or submitted. Once submitted, the story is locked until a moderator decision workflow is connected. The UI uses image URLs for comic panels and covers; file uploads and object storage are not part of this milestone.
 
-Public creator pages are available at `/creators/:creatorId`; they show the creator's public display name, avatar, account join date and published stories only. Creator email addresses and unpublished work are not included.
+Public creator pages are available at `/creators/:creatorId`; the route accepts either the legacy creator ID or the custom handle. Creator Studio includes profile settings for the public name, avatar URL, unique handle, 500-character bio and website URL. Public pages show these fields plus the account join date and published stories only. Creator email addresses and unpublished work are not included.
+
+The Prisma `User` model stores nullable creator profile fields so existing reader accounts remain valid. A fresh local database includes these fields when the initial migration is generated. Existing databases must apply a Prisma migration for the three added columns before deploying this change.
 
 Reader bookmarks and chapter progress are account-scoped in PostgreSQL. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter.
 

@@ -7,6 +7,7 @@ import { requireAuthenticatedUser, type AuthSession } from "./middleware/auth.js
 import { auth } from "./lib/auth.js";
 import { prisma } from "./lib/database.js";
 import creatorStoriesRouter from "./routes/creator-stories.js";
+import creatorProfileRouter from "./routes/creator-profile.js";
 import moderationRouter from "./routes/moderation.js";
 import publicStoriesRouter from "./routes/public-stories.js";
 import publicCreatorsRouter from "./routes/public-creators.js";
@@ -60,6 +61,7 @@ app.get("/api/v1/me", requireAuthenticatedUser, (_request, response) => {
 app.use("/api/v1/stories", publicStoriesRouter);
 app.use("/api/v1/creators", publicCreatorsRouter);
 app.use("/api/v1/creator/stories", creatorStoriesRouter);
+app.use("/api/v1/creator/profile", creatorProfileRouter);
 app.use("/api/v1/moderation/reviews", moderationRouter);
 app.use("/api/v1", readerLibraryRouter);
 

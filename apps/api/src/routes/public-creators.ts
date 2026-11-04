@@ -10,7 +10,7 @@ const publishedStoryWhere = {
 };
 
 const creatorStoryInclude = {
-  author: { select: { id: true, displayName: true } },
+  author: { select: { id: true, displayName: true, creatorHandle: true } },
   genres: { include: { genre: { select: { name: true, slug: true } } } },
   chapters: {
     where: { isPublished: true },
@@ -32,13 +32,16 @@ router.get("/:creatorId", async (request, response, next) => {
 
     const creator = await prisma.user.findFirst({
       where: {
-        id: parsedId.data,
+        OR: [{ id: parsedId.data }, { creatorHandle: parsedId.data }],
         stories: { some: publishedStoryWhere },
       },
       select: {
         id: true,
         displayName: true,
         avatarUrl: true,
+        creatorHandle: true,
+        creatorBio: true,
+        creatorWebsiteUrl: true,
         createdAt: true,
         stories: {
           where: publishedStoryWhere,
@@ -60,6 +63,9 @@ router.get("/:creatorId", async (request, response, next) => {
         id: creator.id,
         displayName: creator.displayName,
         avatarUrl: creator.avatarUrl,
+        handle: creator.creatorHandle,
+        bio: creator.creatorBio,
+        websiteUrl: creator.creatorWebsiteUrl,
         joinedAt: creator.createdAt,
         stories: creator.stories,
       },

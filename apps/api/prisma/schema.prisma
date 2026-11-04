@@ -43,6 +43,9 @@ model User {
   emailVerified     Boolean            @default(false)
   displayName       String
   avatarUrl         String?            @db.Text
+  creatorHandle     String?            @unique
+  creatorBio        String?            @db.VarChar(500)
+  creatorWebsiteUrl String?            @db.Text
   role              UserRole           @default(READER)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
