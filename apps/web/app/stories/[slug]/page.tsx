@@ -62,7 +62,7 @@ export default async function StoryDetailsPage({ params }: StoryPageProps) {
               StoryWorld<span className="brand-period">.</span>
             </span>
           </Link>
-          <Link href="/#collection" className="detail-back-link">
+          <Link href="/discover" className="detail-back-link">
             <ArrowLeft size={15} aria-hidden="true" />
             Back to stories
           </Link>
@@ -73,7 +73,7 @@ export default async function StoryDetailsPage({ params }: StoryPageProps) {
         <nav className="detail-breadcrumb" aria-label="Breadcrumb">
           <Link href="/">Home</Link>
           <span aria-hidden="true">/</span>
-          <Link href="/#collection">Discover</Link>
+          <Link href="/discover">Discover</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">{story.title}</span>
         </nav>
@@ -115,7 +115,7 @@ export default async function StoryDetailsPage({ params }: StoryPageProps) {
               <Link className="button-primary" href={`/stories/${story.id}/read`}>
                 Read sample {story.type === "Comic" ? "episode" : "chapter"} <ArrowRight size={16} />
               </Link>
-              <Link className="button-secondary" href="/#collection">
+              <Link className="button-secondary" href="/discover">
                 Explore more stories
               </Link>
             </div>
@@ -189,7 +189,7 @@ export default async function StoryDetailsPage({ params }: StoryPageProps) {
                 StoryWorld is being built for comics, novels and short stories from
                 creators around the world.
               </p>
-              <Link href="/#collection">
+              <Link href="/discover">
                 Browse the collection <ArrowRight size={14} />
               </Link>
             </section>

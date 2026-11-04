@@ -15,14 +15,6 @@ export type ComicPanel = {
   caption?: string;
 };
 
-export type ComicPanel = {
-  id: string;
-  style: "archive" | "mountain" | "portal" | "orbital" | "signal";
-  scene: string;
-  dialogue?: string;
-  caption?: string;
-};
-
 export type Story = {
   id: string;
   title: string;
