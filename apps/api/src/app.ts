@@ -1,7 +1,10 @@
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
+import { toNodeHandler } from "better-auth/node";
 import { env } from "./config/env.js";
+import { requireAuthenticatedUser, requireRoles, type AuthSession } from "./middleware/auth.js";
+import { auth } from "./lib/auth.js";
 import { prisma } from "./lib/database.js";
 
 export const app = express();
@@ -9,6 +12,10 @@ export const app = express();
 app.disable("x-powered-by");
 app.use(helmet());
 app.use(cors({ origin: env.WEB_ORIGIN, credentials: true }));
+
+// Better Auth consumes the request body itself, so mount it before express.json().
+app.all("/api/auth/*splat", toNodeHandler(auth));
+
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/v1/health", (_request, response) => {
@@ -27,6 +34,107 @@ app.get("/api/v1/ready", async (_request, response, next) => {
     next(error);
   }
 });
+
+app.get("/api/v1/me", requireAuthenticatedUser, (_request, response) => {
+  const session = response.locals.authSession as AuthSession;
+
+  response.status(200).json({
+    user: {
+      id: session.user.id,
+      name: session.user.name,
+      email: session.user.email,
+      image: session.user.image,
+      role: session.user.role,
+    },
+    session: {
+      expiresAt: session.session.expiresAt,
+    },
+  });
+});
+
+app.get(
+  "/api/v1/creator/stories",
+  requireAuthenticatedUser,
+  requireRoles("CREATOR", "MODERATOR", "ADMIN"),
+  async (_request, response, next) => {
+    try {
+      const session = response.locals.authSession as AuthSession;
+      const stories = await prisma.story.findMany({
+        where: { authorId: session.user.id },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          synopsis: true,
+          format: true,
+          status: true,
+          coverImageUrl: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: { select: { chapters: true } },
+        },
+        orderBy: { updatedAt: "desc" },
+      });
+
+      response.status(200).json({ stories });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+app.get(
+  "/api/v1/moderation/reviews",
+  requireAuthenticatedUser,
+  requireRoles("MODERATOR", "ADMIN"),
+  async (_request, response, next) => {
+    try {
+      const submissions = await prisma.story.findMany({
+        where: { status: "IN_REVIEW" },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          synopsis: true,
+          format: true,
+          coverImageUrl: true,
+          createdAt: true,
+          updatedAt: true,
+          author: {
+            select: {
+              id: true,
+              displayName: true,
+            },
+          },
+          chapters: {
+            select: {
+              id: true,
+              number: true,
+              title: true,
+              body: true,
+              panels: {
+                select: {
+                  id: true,
+                  position: true,
+                  imageUrl: true,
+                  altText: true,
+                  caption: true,
+                },
+                orderBy: { position: "asc" },
+              },
+            },
+            orderBy: { number: "asc" },
+          },
+        },
+        orderBy: { updatedAt: "asc" },
+      });
+
+      response.status(200).json({ submissions });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 app.use((_request, response) => {
   response.status(404).json({
