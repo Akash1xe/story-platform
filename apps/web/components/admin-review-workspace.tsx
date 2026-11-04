@@ -37,7 +37,7 @@ function statusClass(status: CreatorReviewStatus): string {
 
 function reviewWordCount(story: CreatorStory): number {
   return story.chapters.reduce((total, chapter) => {
-    return total + chapter.body.trim().split(/\\s+/).filter(Boolean).length;
+    return total + chapter.body.trim().split(/\s+/).filter(Boolean).length;
   }, 0);
 }
 
@@ -149,7 +149,7 @@ export default function AdminReviewWorkspace() {
       ]);
       setFeedback(
         decision === "Approved"
-          ? "Story approved and published. The decision is saved to the moderation history."
+          ? "Story approved and marked PUBLISHED. The decision is saved to the moderation history."
           : "Changes requested. The story is back in the creator’s editable drafts with your note."
       );
       setFilter("Reviewed");
@@ -251,7 +251,7 @@ export default function AdminReviewWorkspace() {
                   <div className="admin-chapter-list">
                     {selectedStory.chapters.map((chapter, index) => (
                       <details className="admin-chapter" key={chapter.id} open={index === 0}>
-                        <summary><span className="admin-chapter-index">{String(index + 1).padStart(2, "0")}</span><strong>{chapter.title}</strong><span>{selectedStory.format === "Comic" ? chapter.panelUrls.length + " panels" : chapter.body.trim().split(/\\s+/).filter(Boolean).length + " words"}</span></summary>
+                        <summary><span className="admin-chapter-index">{String(index + 1).padStart(2, "0")}</span><strong>{chapter.title}</strong><span>{selectedStory.format === "Comic" ? chapter.panelUrls.length + " panels" : chapter.body.trim().split(/\s+/).filter(Boolean).length + " words"}</span></summary>
                         <div className="admin-chapter-content">
                           {selectedStory.format === "Comic" ? (
                             chapter.panelUrls.length ? <div className="admin-panel-gallery">{chapter.panelUrls.map((url, panelIndex) => <figure key={url + panelIndex}><img src={url} alt={chapter.title + " panel " + (panelIndex + 1)} loading="lazy" /><figcaption>Panel {panelIndex + 1}</figcaption></figure>)}</div> : <p className="admin-no-content">No panel images saved.</p>
@@ -271,7 +271,7 @@ export default function AdminReviewWorkspace() {
                       <button className="admin-return-button" type="button" disabled={isSaving} onClick={() => void decide("Changes requested")}><MessageSquareText size={15} /> Request changes</button>
                     </div>
                   ) : (
-                    <div className="admin-reviewed-state"><CheckCircle2 size={16} /><span>{selectedStory.reviewStatus === "Approved" ? "This story is published and its chapters are available for readers." : "Changes were requested. The creator can edit the draft and submit it again."}</span></div>
+                    <div className="admin-reviewed-state"><CheckCircle2 size={16} /><span>{selectedStory.reviewStatus === "Approved" ? "This story is approved and its database status is PUBLISHED." : "Changes were requested. The creator can edit the draft and submit it again."}</span></div>
                   )}
                   {selectedStory.reviewNote && <div className="admin-saved-note"><strong>Latest review note</strong><p>{selectedStory.reviewNote}</p></div>}
                   {feedback && <p className="admin-feedback" role="status">{feedback}</p>}
