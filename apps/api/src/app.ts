@@ -6,6 +6,7 @@ import { env } from "./config/env.js";
 import { requireAuthenticatedUser, requireRoles, type AuthSession } from "./middleware/auth.js";
 import { auth } from "./lib/auth.js";
 import { prisma } from "./lib/database.js";
+import creatorStoriesRouter from "./routes/creator-stories.js";
 
 export const app = express();
 
@@ -16,7 +17,7 @@ app.use(cors({ origin: env.WEB_ORIGIN, credentials: true }));
 // Better Auth consumes the request body itself, so mount it before express.json().
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "10mb" }));
 
 app.get("/api/v1/health", (_request, response) => {
   response.status(200).json({
@@ -52,36 +53,7 @@ app.get("/api/v1/me", requireAuthenticatedUser, (_request, response) => {
   });
 });
 
-app.get(
-  "/api/v1/creator/stories",
-  requireAuthenticatedUser,
-  requireRoles("CREATOR", "MODERATOR", "ADMIN"),
-  async (_request, response, next) => {
-    try {
-      const session = response.locals.authSession as AuthSession;
-      const stories = await prisma.story.findMany({
-        where: { authorId: session.user.id },
-        select: {
-          id: true,
-          slug: true,
-          title: true,
-          synopsis: true,
-          format: true,
-          status: true,
-          coverImageUrl: true,
-          createdAt: true,
-          updatedAt: true,
-          _count: { select: { chapters: true } },
-        },
-        orderBy: { updatedAt: "desc" },
-      });
-
-      response.status(200).json({ stories });
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+app.use("/api/v1/creator/stories", creatorStoriesRouter);
 
 app.get(
   "/api/v1/moderation/reviews",
