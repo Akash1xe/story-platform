@@ -27,6 +27,14 @@ export type PublicStoryDetail = PublicStorySummary & {
   }>;
 };
 
+export type PublicCreatorProfile = {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+  joinedAt: string;
+  stories: PublicStorySummary[];
+};
+
 export type PublicChapter = {
   id: string;
   number: number;
@@ -92,6 +100,12 @@ export async function getPublicStory(slug: string) {
   );
 }
 
+export async function getPublicCreator(creatorId: string) {
+  return fetchApi<{ creator: PublicCreatorProfile }>(
+    `/api/v1/creators/${encodeURIComponent(creatorId)}`,
+  );
+}
+
 export async function getPublicChapter(slug: string, chapterNumber: number) {
   return fetchApi<PublicStoryPageData>(
     `/api/v1/stories/${encodeURIComponent(slug)}/chapters/${chapterNumber}`,
@@ -107,6 +121,7 @@ function formatType(format: PublicStorySummary["format"]): StoryType {
 export function toCatalogStory(story: PublicStorySummary): Story {
   return {
     id: story.slug,
+    creatorId: story.author.id,
     isPublished: true,
     title: story.title,
     creator: story.author.displayName,

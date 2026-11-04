@@ -17,6 +17,7 @@ export type ComicPanel = {
 
 export type Story = {
   id: string;
+  creatorId?: string;
   isPublished?: boolean;
   title: string;
   creator: string;

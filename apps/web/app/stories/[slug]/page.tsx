@@ -43,7 +43,7 @@ export default async function StoryDetailsPage({ params }: PageProps) {
           <div className="detail-eyebrow"><Sparkles size={13} />STORYWORLD PUBLICATION</div>
           <div className="detail-type-line">{format} <span>·</span> {genre}</div>
           <h1 id="story-title">{story.title}</h1>
-          <p className="detail-byline">Created by <span>{story.author.displayName}</span></p>
+          <p className="detail-byline">Created by <Link href={`/creators/${story.author.id}`}>{story.author.displayName}</Link></p>
           <p className="detail-description">{story.synopsis}</p>
           <div className="detail-tag-list"><span><Layers3 size={13} />{format}</span><span><Clock3 size={13} />{story.chapters.length} chapters</span><span><CheckCircle2 size={13} />{story.publicationStatus === "COMPLETED" ? "Completed" : "Ongoing"}</span></div>
           {firstChapter && <div className="detail-actions">
@@ -63,7 +63,7 @@ export default async function StoryDetailsPage({ params }: PageProps) {
         </div>
       </section>
       <aside className="story-detail-sidebar"><section className="detail-sidebar-card"><span className="eyebrow">ABOUT THIS STORY</span><h2>At a glance</h2><dl className="story-facts">
-        <div><dt>Creator</dt><dd><Feather size={14} />{story.author.displayName}</dd></div>
+        <div><dt>Creator</dt><dd><Feather size={14} /><Link href={`/creators/${story.author.id}`}>{story.author.displayName}</Link></dd></div>
         <div><dt>Genre</dt><dd>{genre}</dd></div><div><dt>Format</dt><dd>{format}</dd></div><div><dt>Publication</dt><dd>{story.publicationStatus === "COMPLETED" ? "Completed" : "Ongoing"}</dd></div>
       </dl></section></aside>
     </main>
