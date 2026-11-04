@@ -3,7 +3,7 @@ import AdminReviewWorkspace from "@/components/admin-review-workspace";
 import { requireUserRole } from "@/lib/server-auth";
 
 export const metadata: Metadata = {
-  title: "Admin Review Preview | StoryWorld",
+  title: "Moderation Review Queue | StoryWorld",
   description: "Review creator submissions in the StoryWorld moderation workspace."
 };
 

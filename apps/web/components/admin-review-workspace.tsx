@@ -18,15 +18,14 @@ import {
   XCircle
 } from "lucide-react";
 import {
-  formatCreatorDate,
-  readCreatorStories,
-  writeCreatorStories,
-  type CreatorReviewStatus,
-  type CreatorStory
-} from "@/lib/creator-content";
+  decideModerationSubmission,
+  listModerationSubmissions,
+  type ModerationDecision,
+  type ModerationFilter
+} from "@/lib/moderation-api";
+import { formatCreatorDate, type CreatorReviewStatus, type CreatorStory } from "@/lib/creator-content";
 import { AuthNav } from "@/components/auth-nav";
 
-type ReviewFilter = "Pending" | "Reviewed" | "All";
 type ReviewDecision = "Approved" | "Changes requested";
 
 function statusClass(status: CreatorReviewStatus): string {
@@ -45,19 +44,38 @@ function reviewWordCount(story: CreatorStory): number {
 export default function AdminReviewWorkspace() {
   const [stories, setStories] = useState<CreatorStory[]>([]);
   const [isReady, setIsReady] = useState(false);
-  const [filter, setFilter] = useState<ReviewFilter>("Pending");
+  const [isSaving, setIsSaving] = useState(false);
+  const [filter, setFilter] = useState<ModerationFilter>("Pending");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reviewNote, setReviewNote] = useState("");
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
-    const stored = readCreatorStories();
-    setStories(stored);
-    const firstPending = stored.find((story) => story.reviewStatus === "In review");
-    setSelectedId(firstPending?.id ?? stored[0]?.id ?? null);
-    setIsReady(true);
+    let active = true;
+
+    async function loadSubmissions() {
+      try {
+        const loaded = await listModerationSubmissions("All");
+        if (!active) return;
+        setStories(loaded);
+        const firstPending = loaded.find((story) => story.reviewStatus === "In review");
+        setSelectedId(firstPending?.id ?? loaded[0]?.id ?? null);
+      } catch (loadFailure) {
+        if (active) {
+          setLoadError(loadFailure instanceof Error ? loadFailure.message : "Could not load submissions.");
+        }
+      } finally {
+        if (active) setIsReady(true);
+      }
+    }
+
+    void loadSubmissions();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const counts = useMemo(() => ({
@@ -75,7 +93,13 @@ export default function AdminReviewWorkspace() {
           (filter === "Pending" && story.reviewStatus === "In review") ||
           (filter === "Reviewed" &&
             (story.reviewStatus === "Approved" || story.reviewStatus === "Changes requested"));
-        const searchable = [story.title, story.synopsis, story.genre, story.format].join(" ").toLowerCase();
+        const searchable = [
+          story.title,
+          story.synopsis,
+          story.genre,
+          story.format,
+          story.authorName ?? ""
+        ].join(" ").toLowerCase();
         return matchesFilter && (!normalizedQuery || searchable.includes(normalizedQuery));
       })
       .sort((a, b) => b.updatedAt - a.updatedAt);
@@ -97,13 +121,13 @@ export default function AdminReviewWorkspace() {
     setError("");
   }, [selectedStory?.id, selectedStory?.reviewNote]);
 
-  function selectFilter(nextFilter: ReviewFilter) {
+  function selectFilter(nextFilter: ModerationFilter) {
     setFilter(nextFilter);
     setFeedback("");
   }
 
-  function decide(decision: ReviewDecision) {
-    if (!selectedStory || selectedStory.reviewStatus !== "In review") return;
+  async function decide(decision: ReviewDecision) {
+    if (!selectedStory || selectedStory.reviewStatus !== "In review" || isSaving) return;
     const note = reviewNote.trim();
 
     if (decision === "Changes requested" && note.length < 12) {
@@ -111,31 +135,29 @@ export default function AdminReviewWorkspace() {
       return;
     }
 
-    const timestamp = Date.now();
-    const nextStories = stories.map((story) =>
-      story.id === selectedStory.id
-        ? {
-            ...story,
-            reviewStatus: decision,
-            reviewNote: note,
-            updatedAt: timestamp
-          }
-        : story
-    );
-
-    if (!writeCreatorStories(nextStories)) {
-      setError("The browser could not save this review decision. Storage may be unavailable.");
-      return;
-    }
-
-    setStories(nextStories);
-    setFeedback(
-      decision === "Approved"
-        ? "Marked approved in this browser. This does not publish the story to readers."
-        : "Changes requested. The review note is saved with this local draft."
-    );
+    setIsSaving(true);
     setError("");
-    setFilter("Reviewed");
+    setFeedback("");
+
+    try {
+      const apiDecision: ModerationDecision =
+        decision === "Approved" ? "APPROVED" : "CHANGES_REQUESTED";
+      const updated = await decideModerationSubmission(selectedStory.id, apiDecision, note);
+      setStories((current) => [
+        updated,
+        ...current.filter((story) => story.id !== updated.id)
+      ]);
+      setFeedback(
+        decision === "Approved"
+          ? "Story approved and marked PUBLISHED. The decision is saved to the moderation history."
+          : "Changes requested. The story is back in the creator’s editable drafts with your note."
+      );
+      setFilter("Reviewed");
+    } catch (decisionFailure) {
+      setError(decisionFailure instanceof Error ? decisionFailure.message : "The decision could not be saved.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -160,25 +182,25 @@ export default function AdminReviewWorkspace() {
       </header>
 
       <main className="admin-shell">
-        <div className="admin-breadcrumb"><Link href="/creator"><ArrowLeft size={14} /> Creator Studio</Link><span>/</span><span>Admin review preview</span></div>
+        <div className="admin-breadcrumb"><Link href="/creator"><ArrowLeft size={14} /> Creator Studio</Link><span>/</span><span>Review queue</span></div>
 
         <section className="admin-welcome">
           <div>
             <span className="eyebrow"><ShieldAlert size={13} /> MODERATION WORKSPACE</span>
             <h1>Review the next <span>great story.</span></h1>
-            <p>Check submissions, read their chapters and give creators a clear decision before anything is considered for publication.</p>
+            <p>Inspect creator submissions, leave actionable feedback and publish approved stories through a server-recorded decision.</p>
           </div>
           <div className="admin-welcome-art"><Inbox size={35} /><span>QUALITY<br />BEFORE<br />PUBLISHING</span></div>
         </section>
 
         <div className="admin-prototype-warning" role="note">
           <AlertCircle size={17} />
-          <div><strong>Local admin preview — not access-controlled</strong><span>This queue reads browser storage on this device. It is not a real admin role, submissions are not shared between users or devices, and approval does not publish content. Do not use this route for real moderation until server authentication and authorization are added.</span></div>
+          <div><strong>Database-backed moderation</strong><span>Submissions are loaded from PostgreSQL. Approval publishes the story and its chapters; requesting changes returns the story to an editable draft and stores your review note.</span></div>
         </div>
 
         <section className="admin-metrics" aria-label="Moderation totals">
           <article><span className="admin-metric-icon"><Clock3 size={17} /></span><strong>{isReady ? counts.pending : "—"}</strong><span>Awaiting review</span></article>
-          <article><span className="admin-metric-icon"><CheckCircle2 size={17} /></span><strong>{isReady ? counts.approved : "—"}</strong><span>Marked approved</span></article>
+          <article><span className="admin-metric-icon"><CheckCircle2 size={17} /></span><strong>{isReady ? counts.approved : "—"}</strong><span>Published after approval</span></article>
           <article><span className="admin-metric-icon"><MessageSquareText size={17} /></span><strong>{isReady ? counts.changes : "—"}</strong><span>Changes requested</span></article>
         </section>
 
@@ -187,25 +209,27 @@ export default function AdminReviewWorkspace() {
             <div className="admin-queue-heading"><div><span className="eyebrow">SUBMISSIONS</span><h2>Review queue</h2></div><span className="admin-queue-count">{visibleStories.length}</span></div>
             <label className="admin-search"><Search size={15} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search submissions..." aria-label="Search submissions" /></label>
             <div className="admin-filter-tabs" role="group" aria-label="Filter submissions">
-              {(["Pending", "Reviewed", "All"] as ReviewFilter[]).map((item) => (
+              {(["Pending", "Reviewed", "All"] as ModerationFilter[]).map((item) => (
                 <button key={item} type="button" className={filter === item ? "is-active" : ""} aria-pressed={filter === item} onClick={() => selectFilter(item)}>{item}</button>
               ))}
             </div>
             {!isReady ? (
               <div className="admin-queue-empty">Loading submissions…</div>
+            ) : loadError ? (
+              <div className="admin-queue-empty"><AlertCircle size={23} /><strong>Could not load the queue</strong><span>{loadError}</span></div>
             ) : visibleStories.length ? (
               <div className="admin-submission-list">
                 {visibleStories.map((story) => (
                   <button key={story.id} type="button" className={"admin-submission" + (selectedId === story.id ? " is-selected" : "")} onClick={() => { setSelectedId(story.id); setFeedback(""); }}>
                     <span className="admin-submission-top"><span>{story.format}</span><span className={statusClass(story.reviewStatus)}>{story.reviewStatus}</span></span>
                     <strong>{story.title || "Untitled story"}</strong>
-                    <span className="admin-submission-meta">{story.genre || "Genre not set"} · {story.chapters.length} {story.chapters.length === 1 ? "chapter" : "chapters"}</span>
+                    <span className="admin-submission-meta">{story.genre || "Genre not set"} · {story.chapters.length} {story.chapters.length === 1 ? "chapter" : "chapters"}{story.authorName ? " · " + story.authorName : ""}</span>
                     <span className="admin-submission-date">Updated {formatCreatorDate(story.updatedAt)}</span>
                   </button>
                 ))}
               </div>
             ) : (
-              <div className="admin-queue-empty"><Inbox size={23} /><strong>{filter === "Pending" ? "No submissions to review" : "No matching submissions"}</strong><span>{filter === "Pending" ? "When a creator submits a complete work from this browser, it will appear here." : "Try another filter or clear the search."}</span></div>
+              <div className="admin-queue-empty"><Inbox size={23} /><strong>{filter === "Pending" ? "No submissions to review" : "No matching submissions"}</strong><span>{filter === "Pending" ? "New creator submissions will appear here when they are sent for review." : "Try another filter or clear the search."}</span></div>
             )}
           </aside>
 
@@ -213,7 +237,7 @@ export default function AdminReviewWorkspace() {
             {selectedStory ? (
               <>
                 <div className="admin-detail-heading">
-                  <div><span className="eyebrow">SUBMISSION DETAILS</span><h2>{selectedStory.title || "Untitled story"}</h2><p>Submitted locally · {formatCreatorDate(selectedStory.updatedAt)}</p></div>
+                  <div><span className="eyebrow">SUBMISSION DETAILS</span><h2>{selectedStory.title || "Untitled story"}</h2><p>Submitted by {selectedStory.authorName || "creator"} · Last updated {formatCreatorDate(selectedStory.updatedAt)}</p></div>
                   <span className={statusClass(selectedStory.reviewStatus)}>{selectedStory.reviewStatus}</span>
                 </div>
 
@@ -240,16 +264,16 @@ export default function AdminReviewWorkspace() {
 
                 <section className="admin-decision">
                   <div className="admin-decision-heading"><div><span className="eyebrow">MODERATION DECISION</span><h3>Leave a review</h3></div><span className="admin-decision-hint">Only pending items can be decided</span></div>
-                  <label className="admin-review-note"><span>Feedback to creator {selectedStory.reviewStatus === "In review" ? "(required when requesting changes)" : ""}</span><textarea value={reviewNote} onChange={(event) => setReviewNote(event.target.value)} rows={4} disabled={selectedStory.reviewStatus !== "In review"} placeholder="Explain what is working well or what needs to be improved..." /></label>
+                  <label className="admin-review-note"><span>Feedback to creator {selectedStory.reviewStatus === "In review" ? "(required when requesting changes)" : ""}</span><textarea value={reviewNote} onChange={(event) => setReviewNote(event.target.value)} rows={4} disabled={selectedStory.reviewStatus !== "In review" || isSaving} placeholder="Explain what is working well or what needs to be improved..." /></label>
                   {selectedStory.reviewStatus === "In review" ? (
                     <div className="admin-decision-actions">
-                      <button className="admin-approve-button" type="button" onClick={() => decide("Approved")}><Check size={15} /> Mark approved</button>
-                      <button className="admin-return-button" type="button" onClick={() => decide("Changes requested")}><MessageSquareText size={15} /> Request changes</button>
+                      <button className="admin-approve-button" type="button" disabled={isSaving} onClick={() => void decide("Approved")}><Check size={15} /> {isSaving ? "Saving…" : "Approve & publish"}</button>
+                      <button className="admin-return-button" type="button" disabled={isSaving} onClick={() => void decide("Changes requested")}><MessageSquareText size={15} /> Request changes</button>
                     </div>
                   ) : (
-                    <div className="admin-reviewed-state"><CheckCircle2 size={16} /><span>{selectedStory.reviewStatus === "Approved" ? "This item has been marked approved in the local prototype." : "Changes were requested. The creator can edit and resubmit this draft."}</span></div>
+                    <div className="admin-reviewed-state"><CheckCircle2 size={16} /><span>{selectedStory.reviewStatus === "Approved" ? "This story is approved and its database status is PUBLISHED." : "Changes were requested. The creator can edit the draft and submit it again."}</span></div>
                   )}
-                  {selectedStory.reviewNote && <div className="admin-saved-note"><strong>Saved review note</strong><p>{selectedStory.reviewNote}</p></div>}
+                  {selectedStory.reviewNote && <div className="admin-saved-note"><strong>Latest review note</strong><p>{selectedStory.reviewNote}</p></div>}
                   {feedback && <p className="admin-feedback" role="status">{feedback}</p>}
                   {error && <p className="admin-error" role="alert"><XCircle size={14} />{error}</p>}
                 </section>
@@ -260,7 +284,7 @@ export default function AdminReviewWorkspace() {
           </section>
         </section>
 
-        <div className="admin-footer-note"><Filter size={14} /> Decisions in this preview only change local browser storage. The production flow will need a moderator identity, an auditable review history and server-enforced publication states.</div>
+        <div className="admin-footer-note"><Filter size={14} /> Every moderator decision is stored with its reviewer and timestamp. Approval publishes the story; requested changes return it to the creator as a draft.</div>
       </main>
     </>
   );

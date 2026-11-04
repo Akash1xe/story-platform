@@ -20,7 +20,7 @@ type ApiChapter = {
   panels: ApiPanel[];
 };
 
-type ApiStory = {
+export type ApiStory = {
   id: string;
   slug: string;
   title: string;
@@ -31,9 +31,15 @@ type ApiStory = {
   coverImageUrl: string | null;
   createdAt: string;
   updatedAt: string;
+  author?: { id: string; displayName: string };
   genres: Array<{ genre: { name: string } }>;
   chapters: ApiChapter[];
-  moderationReviews: Array<{ decision: string; note: string | null }>;
+  moderationReviews: Array<{
+    decision: "APPROVED" | "CHANGES_REQUESTED" | string;
+    note: string | null;
+    createdAt?: string;
+    reviewer?: { id: string; displayName: string };
+  }>;
 };
 
 export type StoryDraftInput = {
@@ -54,9 +60,12 @@ function toCreatorFormat(format: ApiStory["format"]): CreatorFormat {
   return "Comic";
 }
 
-function toReviewStatus(status: ApiStory["status"]): CreatorReviewStatus {
-  if (status === "IN_REVIEW") return "In review";
-  if (status === "PUBLISHED" || status === "ARCHIVED") return "Approved";
+function toReviewStatus(story: ApiStory): CreatorReviewStatus {
+  if (story.status === "IN_REVIEW") return "In review";
+  if (story.status === "PUBLISHED" || story.status === "ARCHIVED") return "Approved";
+  if (story.moderationReviews[0]?.decision === "CHANGES_REQUESTED") {
+    return "Changes requested";
+  }
   return "Draft";
 }
 
@@ -65,7 +74,7 @@ function toTimestamp(value: string): number {
   return Number.isNaN(parsed) ? Date.now() : parsed;
 }
 
-function fromApiStory(story: ApiStory): CreatorStory {
+export function fromApiStory(story: ApiStory): CreatorStory {
   return {
     id: story.id,
     title: story.title,
@@ -74,8 +83,9 @@ function fromApiStory(story: ApiStory): CreatorStory {
     format: toCreatorFormat(story.format),
     publicationStatus: story.publicationStatus === "COMPLETED" ? "Completed" : "Ongoing",
     coverImage: story.coverImageUrl ?? "",
-    reviewStatus: toReviewStatus(story.status),
+    reviewStatus: toReviewStatus(story),
     reviewNote: story.moderationReviews[0]?.note ?? "",
+    authorName: story.author?.displayName,
     chapters: story.chapters.map((chapter) => ({
       id: chapter.id,
       title: chapter.title,
