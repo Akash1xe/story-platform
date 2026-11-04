@@ -11,7 +11,6 @@ import {
   Clock3,
   FileText,
   Filter,
-  Image as ImageIcon,
   Inbox,
   MessageSquareText,
   Search,
@@ -81,15 +80,20 @@ export default function AdminReviewWorkspace() {
       .sort((a, b) => b.updatedAt - a.updatedAt);
   }, [stories, filter, query]);
 
+  useEffect(() => {
+    if (visibleStories.some((story) => story.id === selectedId)) return;
+    setSelectedId(visibleStories[0]?.id ?? null);
+  }, [visibleStories, selectedId]);
+
   const selectedStory = useMemo(
-    () => stories.find((story) => story.id === selectedId) ?? null,
-    [stories, selectedId]
+    () => visibleStories.find((story) => story.id === selectedId) ?? null,
+    [visibleStories, selectedId]
   );
 
   useEffect(() => {
     setReviewNote(selectedStory?.reviewNote ?? "");
     setError("");
-  }, [selectedStory?.id]);
+  }, [selectedStory?.id, selectedStory?.reviewNote]);
 
   function selectFilter(nextFilter: ReviewFilter) {
     setFilter(nextFilter);
