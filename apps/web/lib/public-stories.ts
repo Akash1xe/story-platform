@@ -107,6 +107,7 @@ function formatType(format: PublicStorySummary["format"]): StoryType {
 export function toCatalogStory(story: PublicStorySummary): Story {
   return {
     id: story.slug,
+    isPublished: true,
     title: story.title,
     creator: story.author.displayName,
     genre: story.genres[0]?.genre.name ?? "Uncategorised",

@@ -15,11 +15,13 @@ export default function StoryCard({ story }: StoryCardProps) {
           <span className="cover-type">{story.type}</span><div className="cover-gradient" />
           <div className="cover-caption"><span>{story.genre}</span><h3>{story.title}</h3></div>
         </Link>
+{story.isPublished && (
         <button type="button" className={"save-button" + (saved ? " is-saved" : "")}
           aria-label={saved ? `Remove ${story.title} from My Library` : `Save ${story.title} to My Library`}
           aria-pressed={saved} disabled={!isReady || isSaving} onClick={() => void toggleSavedStory(story.id)}>
           <Bookmark size={16} fill={saved ? "currentColor" : "none"} />
         </button>
+        )}
       </div>
       <div className="story-info">
         <span className="story-creator">by {story.creator}</span><p>{story.description}</p>
