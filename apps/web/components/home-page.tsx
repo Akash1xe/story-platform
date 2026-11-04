@@ -415,8 +415,8 @@ export default function HomePage() {
               who will love your stories.
             </p>
           </div>
-          <Link className="button-primary" href="#home">
-            Creator Studio preview <ArrowRight size={16} />
+          <Link className="button-primary" href="/creator">
+            Open Creator Studio <ArrowRight size={16} />
           </Link>
         </section>
 
