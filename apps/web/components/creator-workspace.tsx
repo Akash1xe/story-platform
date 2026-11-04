@@ -81,7 +81,7 @@ export function CreatorStudio() {
 
         <div className="creator-local-note">
           <AlertCircle size={15} />
-          <div><strong>Prototype workspace</strong><span>Drafts are stored in this browser only. Submissions are marked for review locally; secure accounts, uploads and real admin approval come with the backend.</span></div>
+          <div><strong>Prototype workspace</strong><span>Drafts are stored in this browser only. Submissions are marked for review locally; secure accounts, uploads and real admin approval come with the backend.</span><Link className="creator-local-note__admin-link" href="/admin/reviews">Open local admin review preview →</Link></div>
         </div>
 
         <section className="creator-stats" aria-label="Creator dashboard summary">
