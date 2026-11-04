@@ -43,6 +43,7 @@ router.get("/:creatorId", async (request, response, next) => {
         creatorBio: true,
         creatorWebsiteUrl: true,
         createdAt: true,
+        _count: { select: { creatorFollowers: true } },
         stories: {
           where: publishedStoryWhere,
           include: creatorStoryInclude,
@@ -67,6 +68,7 @@ router.get("/:creatorId", async (request, response, next) => {
         bio: creator.creatorBio,
         websiteUrl: creator.creatorWebsiteUrl,
         joinedAt: creator.createdAt,
+        followersCount: creator._count.creatorFollowers,
         stories: creator.stories,
       },
     });

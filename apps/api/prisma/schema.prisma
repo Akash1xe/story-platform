@@ -55,6 +55,21 @@ model User {
   libraryEntries    LibraryEntry[]
   readingProgress   ReadingProgress[]
   moderationReviews ModerationReview[] @relation("ReviewAuthor")
+  followingCreators CreatorFollow[]    @relation("CreatorFollowing")
+  creatorFollowers  CreatorFollow[]    @relation("CreatorFollowers")
+}
+
+model CreatorFollow {
+  id         String   @id @default(cuid())
+  followerId String
+  creatorId  String
+  createdAt  DateTime @default(now())
+  follower   User     @relation("CreatorFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  creator    User     @relation("CreatorFollowers", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, creatorId])
+  @@index([creatorId, createdAt])
+  @@index([followerId, createdAt])
 }
 
 model Session {
