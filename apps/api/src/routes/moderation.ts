@@ -1,5 +1,6 @@
 import { Router, type Response } from "express";
 import { z } from "zod";
+import type { Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../lib/database.js";
 import { requireAuthenticatedUser, requireRoles, type AuthSession } from "../middleware/auth.js";
 
@@ -66,12 +67,12 @@ router.get("/", async (request, response, next) => {
       return;
     }
 
-    const where =
+    const where: Prisma.StoryWhereInput =
       filter.data === "Pending"
         ? { status: "IN_REVIEW" as const }
         : filter.data === "Reviewed"
           ? {
-              status: { in: ["DRAFT", "PUBLISHED", "ARCHIVED"] as const },
+              status: { in: ["DRAFT", "PUBLISHED", "ARCHIVED"] },
               moderationReviews: { some: {} },
             }
           : {
