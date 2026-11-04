@@ -81,8 +81,9 @@ export default function AdminReviewWorkspace() {
   }, [stories, filter, query]);
 
   useEffect(() => {
-    if (visibleStories.some((story) => story.id === selectedId)) return;
-    setSelectedId(visibleStories[0]?.id ?? null);
+    if (selectedId && visibleStories.some((story) => story.id === selectedId)) return;
+    if (visibleStories.length > 0) setSelectedId(visibleStories[0].id);
+    else if (selectedId) setSelectedId(null);
   }, [visibleStories, selectedId]);
 
   const selectedStory = useMemo(
