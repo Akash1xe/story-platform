@@ -11,7 +11,7 @@ export function AuthNav() {
   const { data: session, isPending } = authClient.useSession();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [error, setError] = useState("");
-  const role = session ? (session.user as { role?: string }).role ?? "READER" : "READER";
+  const role = session?.user.role ?? "READER";
 
   async function handleSignOut() {
     setIsSigningOut(true);

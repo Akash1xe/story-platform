@@ -73,6 +73,22 @@ New accounts receive the READER role. The role is a server-owned field and is no
 
 Email/password sign-in is enabled. Email verification delivery is not configured in this milestone, so email verification is not yet enforced. Configure an email provider and enable verification before public production launch.
 
+## Website authentication
+
+Copy `apps/web/.env.example` to `apps/web/.env.local` and set `API_SERVER_URL` to the backend origin reachable by the Next.js server. In local development this is `http://localhost:4000`.
+
+The Next.js app proxies `/api/auth/*` and `/api/v1/*` through external rewrites. Browser authentication therefore uses the website origin for its session cookie, while the Next.js server forwards that cookie to the API when validating protected pages. For deployment, configure HTTPS and make sure the Next.js runtime can reach the configured API origin. Set the API's `BETTER_AUTH_URL` and `WEB_ORIGIN` to the public website origin.
+
+The website provides:
+- `/sign-up` and `/sign-in` for email/password accounts.
+- A reactive account control in the site header for the current account and sign-out.
+- Server-validated access to Creator Studio for CREATOR, MODERATOR and ADMIN roles.
+- Server-validated access to the moderation queue for MODERATOR and ADMIN roles.
+
+Sign-up creates a READER account. A trusted administrator must grant creator or moderator roles before those workspaces become available. The existing creator drafts and review queue still use local browser storage; the pages are protected, but story CRUD and moderation decisions are not yet connected to the database.
+
+Email verification delivery is not configured yet. Configure an email provider and require verification before allowing public production accounts to publish or moderate content.
+
 ## Available scripts
 
 ```bash
@@ -106,4 +122,4 @@ docker-compose.yml  # Local PostgreSQL service
 
 The API includes Express 5, Better Auth, Prisma 7 with the PostgreSQL driver adapter, role-aware API middleware, security headers, CORS, health/readiness endpoints, and relational models for users, sessions, linked accounts, verification tokens, stories, chapters, comic panels, genres, library entries, reading progress, and moderation reviews.
 
-The local Creator Studio and Admin Review interfaces are not yet connected to these authenticated endpoints. Story CRUD, moderation decision endpoints, media uploads and frontend sign-in screens are follow-up work.
+The local Creator Studio and Admin Review interfaces are protected by role checks, but their drafts and decisions still use browser storage. Story CRUD, server-side moderation decisions, media uploads and syncing creator work across accounts are follow-up work.
