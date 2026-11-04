@@ -27,6 +27,11 @@ enum StoryStatus {
   ARCHIVED
 }
 
+enum PublicationStatus {
+  ONGOING
+  COMPLETED
+}
+
 enum ReviewDecision {
   APPROVED
   CHANGES_REQUESTED
@@ -100,6 +105,7 @@ model Story {
   synopsis          String             @db.Text
   format            StoryFormat
   status            StoryStatus        @default(DRAFT)
+  publicationStatus PublicationStatus  @default(ONGOING)
   coverImageUrl     String?            @db.Text
   authorId          String
   publishedAt       DateTime?

@@ -22,13 +22,17 @@ import {
 } from "lucide-react";
 import {
   formatCreatorDate,
-  readCreatorStories,
-  writeCreatorStories,
   type CreatorChapter,
   type CreatorFormat,
   type CreatorReviewStatus,
   type CreatorStory
 } from "@/lib/creator-content";
+import {
+  getCreatorStory,
+  listCreatorStories,
+  saveCreatorStory,
+  submitCreatorStory
+} from "@/lib/creator-api";
 import { genres } from "@/lib/demo-content";
 import { AuthNav } from "@/components/auth-nav";
 
@@ -52,10 +56,27 @@ function statusClass(status: CreatorReviewStatus): string {
 export function CreatorStudio() {
   const [stories, setStories] = useState<CreatorStory[]>([]);
   const [isReady, setIsReady] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
-    setStories(readCreatorStories());
-    setIsReady(true);
+    let active = true;
+
+    listCreatorStories()
+      .then((items) => {
+        if (active) setStories(items);
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setLoadError(error instanceof Error ? error.message : "Could not load your stories.");
+        }
+      })
+      .finally(() => {
+        if (active) setIsReady(true);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const stats = useMemo(() => ({
@@ -81,8 +102,8 @@ export function CreatorStudio() {
         </section>
 
         <div className="creator-local-note">
-          <AlertCircle size={15} />
-          <div><strong>Prototype workspace</strong><span>Drafts are stored in this browser only. Submissions are marked for review locally; secure accounts, uploads and real admin approval come with the backend.</span><Link className="creator-local-note__admin-link" href="/admin/reviews">Open local admin review preview →</Link></div>
+          <CheckCircle2 size={15} />
+          <div><strong>Account-backed workspace</strong><span>Your stories and chapters are saved to your StoryWorld account and can be opened from another device. Image uploads and moderator decisions are being added separately.</span></div>
         </div>
 
         <section className="creator-stats" aria-label="Creator dashboard summary">
@@ -99,6 +120,8 @@ export function CreatorStudio() {
 
           {!isReady ? (
             <div className="creator-empty"><span className="creator-empty-icon"><Layers3 size={25} /></span><h3>Loading your workspace</h3></div>
+          ) : loadError ? (
+            <div className="creator-empty"><AlertCircle size={24} /><h3>Could not load your stories</h3><p>{loadError}</p></div>
           ) : stories.length ? (
             <div className="creator-work-list">
               {stories.slice().sort((a, b) => b.updatedAt - a.updatedAt).map((story) => (
@@ -158,14 +181,23 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const [savedStoryId, setSavedStoryId] = useState(storyId ?? "");
 
   useEffect(() => {
-    const existingStories = readCreatorStories();
-    setStories(existingStories);
-    if (storyId) {
-      const existing = existingStories.find((story) => story.id === storyId);
-      if (existing) {
+    let active = true;
+
+    async function loadStory() {
+      if (!storyId) {
+        if (active) setIsReady(true);
+        return;
+      }
+
+      try {
+        const existing = await getCreatorStory(storyId);
+        if (!active) return;
+        setStories([existing]);
         setTitle(existing.title);
         setSynopsis(existing.synopsis);
         setGenre(existing.genre);
@@ -174,9 +206,19 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
         setCoverImage(existing.coverImage);
         setChapters(existing.chapters);
         setSavedStoryId(existing.id);
+      } catch (loadError) {
+        if (active) {
+          setLoadError(loadError instanceof Error ? loadError.message : "Could not load this story.");
+        }
+      } finally {
+        if (active) setIsReady(true);
       }
     }
-    setIsReady(true);
+
+    void loadStory();
+    return () => {
+      active = false;
+    };
   }, [storyId]);
 
   const existingStory = storyId ? stories.find((story) => story.id === storyId) : undefined;
@@ -242,9 +284,12 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
     if (editingChapterId === chapterId) resetChapterForm();
   }
 
-  function persistStory(nextStatus: CreatorReviewStatus) {
+  async function persistStory(nextStatus: CreatorReviewStatus) {
     setError("");
     setNotice("");
+
+    if (isSaving) return;
+
     if (nextStatus === "In review") {
       if (!title.trim() || !synopsis.trim() || !genre) {
         setError("Add a title, synopsis and genre before submitting for review.");
@@ -254,56 +299,67 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
         setError("Add at least one complete chapter or episode before submitting.");
         return;
       }
-      if (format === "Comic" && chapters.some((chapter) => chapter.panelUrls.length === 0 || chapter.panelUrls.some((url) => !/^https?:\/\//i.test(url)))) {
+      if (format === "Comic" && chapters.some((chapter) => chapter.panelUrls.length === 0 || chapter.panelUrls.some((url) => !/^https?:\\/\\//i.test(url)))) {
         setError("Every comic episode needs panel images using public HTTP or HTTPS URLs.");
+        return;
+      }
+      if (format !== "Comic" && chapters.some((chapter) => !chapter.body.trim())) {
+        setError("Every prose chapter needs body text before submission.");
         return;
       }
     }
 
-    const timestamp = Date.now();
-    const id = savedStoryId || makeId();
-    const previous = stories.find((story) => story.id === id);
-    const nextStory: CreatorStory = {
-      id,
-      title: title.trim(),
-      synopsis: synopsis.trim(),
-      genre,
-      format,
-      publicationStatus,
-      coverImage: coverImage.trim(),
-      reviewStatus: nextStatus,
-      reviewNote: nextStatus === "Draft" ? "" : (previous?.reviewNote ?? ""),
-      chapters,
-      createdAt: previous?.createdAt ?? timestamp,
-      updatedAt: timestamp
-    };
-    const nextStories = previous
-      ? stories.map((story) => story.id === id ? nextStory : story)
-      : [nextStory, ...stories];
+    setIsSaving(true);
+    try {
+      const saved = await saveCreatorStory(savedStoryId || undefined, {
+        title: title.trim(),
+        synopsis: synopsis.trim(),
+        genre,
+        format,
+        publicationStatus,
+        coverImage: coverImage.trim(),
+        chapters: chapters.map((chapter) => ({
+          title: chapter.title,
+          body: chapter.body,
+          panelUrls: chapter.panelUrls,
+        })),
+      });
+      const result = nextStatus === "In review"
+        ? await submitCreatorStory(saved.id)
+        : saved;
 
-    if (!writeCreatorStories(nextStories)) {
-      setError("The browser could not save this draft. Storage may be full or disabled.");
-      return;
+      setStories((current) => [
+        result,
+        ...current.filter((story) => story.id !== result.id),
+      ]);
+      setSavedStoryId(result.id);
+
+      if (!storyId) {
+        router.replace("/creator/" + result.id);
+      }
+
+      setNotice(
+        nextStatus === "In review"
+          ? "Your story has been submitted. It is now saved in the moderator review queue."
+          : "Draft saved to your StoryWorld account.",
+      );
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "The story could not be saved.");
+    } finally {
+      setIsSaving(false);
     }
-
-    setStories(nextStories);
-    setSavedStoryId(id);
-    if (!storyId) router.replace("/creator/" + id);
-    setNotice(nextStatus === "In review"
-      ? "Your work is marked In review in this browser. Real moderator review is not connected yet."
-      : "Draft saved on this device.");
   }
 
   if (!isReady) {
     return <><CreatorHeader active="studio" /><main className="creator-shell"><div className="creator-empty">Loading editor…</div></main></>;
   }
 
-  if (notFound) {
-    return <><CreatorHeader active="studio" /><main className="creator-shell"><div className="creator-empty"><AlertCircle size={25} /><h2>Draft not found</h2><p>This story may have been removed from this browser.</p><Link className="button-primary" href="/creator">Back to Creator Studio</Link></div></main></>;
+  if (loadError || notFound) {
+    return <><CreatorHeader active="studio" /><main className="creator-shell"><div className="creator-empty"><AlertCircle size={25} /><h2>{loadError ? "Could not load this story" : "Story not found"}</h2><p>{loadError || "This story is not available in your account."}</p><Link className="button-primary" href="/creator">Back to Creator Studio</Link></div></main></>;
   }
 
   if (isLocked && existingStory) {
-    return <><CreatorHeader active="studio" /><main className="creator-shell"><div className="creator-breadcrumb"><Link href="/creator"><ArrowLeft size={14} /> Creator Studio</Link></div><div className="creator-locked"><CheckCircle2 size={28} /><span className={statusClass(existingStory.reviewStatus)}>{existingStory.reviewStatus}</span><h1>{existingStory.title}</h1><p>{existingStory.reviewStatus === "Approved" ? "This draft is marked approved in the local prototype." : "This draft has been submitted and is read-only while it is in the review state."}</p><Link className="button-secondary" href="/creator">Back to your stories</Link></div></main></>;
+    return <><CreatorHeader active="studio" /><main className="creator-shell"><div className="creator-breadcrumb"><Link href="/creator"><ArrowLeft size={14} /> Creator Studio</Link></div><div className="creator-locked"><CheckCircle2 size={28} /><span className={statusClass(existingStory.reviewStatus)}>{existingStory.reviewStatus}</span><h1>{existingStory.title}</h1><p>{existingStory.reviewStatus === "Approved" ? "This story has been approved and is no longer editable here." : "This story has been submitted and is read-only while it is being reviewed."}</p><Link className="button-secondary" href="/creator">Back to your stories</Link></div></main></>;
   }
 
   return (
@@ -331,7 +387,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
                 <label className="creator-field"><span>Cover image URL <small>(optional)</small></span><input type="url" value={coverImage} onChange={(event) => setCoverImage(event.target.value)} placeholder="https://..." /></label>
               </div>
               {coverImage && <div className="creator-cover-preview" style={{ backgroundImage: "url(" + JSON.stringify(coverImage) + ")" }}><span>Cover preview</span></div>}
-              <p className="creator-field-hint">Image uploads are not connected yet. Use a public image URL for this prototype.</p>
+              <p className="creator-field-hint">Image uploads are not connected yet. Use a publicly accessible HTTP or HTTPS image URL for now.</p>
             </section>
 
             <section className="creator-form-card">
@@ -386,8 +442,8 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
               <p>Submissions enter a review state. They are not published automatically.</p>
             </div>
             <div className="creator-aside-card creator-aside-card--actions">
-              <button className="button-primary creator-wide-button" type="button" onClick={() => persistStory("Draft")}><Save size={15} /> Save draft</button>
-              <button className="button-submit creator-wide-button" type="button" onClick={() => persistStory("In review")}><Send size={15} /> Submit for review</button>
+              <button className="button-primary creator-wide-button" type="button" onClick={() => void persistStory("Draft")} disabled={isSaving}><Save size={15} /> {isSaving ? "Saving…" : "Save draft"}</button>
+              <button className="button-submit creator-wide-button" type="button" onClick={() => void persistStory("In review")} disabled={isSaving}><Send size={15} /> {isSaving ? "Saving…" : "Submit for review"}</button>
               <Link className="creator-cancel-link" href="/creator">Back to Creator Studio</Link>
             </div>
             {notice && <div className="creator-feedback creator-feedback--success" role="status"><CheckCircle2 size={15} />{notice}</div>}

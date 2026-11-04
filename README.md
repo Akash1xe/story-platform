@@ -18,15 +18,9 @@ Install dependencies:
 pnpm install
 ```
 
-Start the website:
-
-```bash
-pnpm dev:web
-```
-
 ## Start the API and database
 
-Start PostgreSQL with the development defaults:
+Start PostgreSQL:
 
 ```bash
 docker compose up -d postgres
@@ -38,17 +32,17 @@ Copy the API environment template:
 cp apps/api/.env.example apps/api/.env
 ```
 
-Replace `BETTER_AUTH_SECRET` with a fresh secret (at least 32 characters). For example:
+Replace `BETTER_AUTH_SECRET` with a fresh secret of at least 32 characters:
 
 ```bash
 openssl rand -base64 32
 ```
 
-Generate the Prisma client and apply the database migration:
+Generate the Prisma client and create the initial migration for a fresh local database:
 
 ```bash
 pnpm --filter @story-platform/api db:generate
-pnpm --filter @story-platform/api db:migrate --name add-authentication
+pnpm --filter @story-platform/api db:migrate --name init
 ```
 
 Start the API:
@@ -59,35 +53,50 @@ pnpm dev:api
 
 The API listens on `http://localhost:4000`.
 
-## Authentication endpoints
+## Start the website
 
-Better Auth is mounted at `/api/auth/*`. It provides email/password sign-up, sign-in, sign-out, session and password-management endpoints. The API's CORS configuration allows the configured web origin to send credentialed requests.
+Copy `apps/web/.env.example` to `apps/web/.env.local`. For local development, the API server URL is `http://localhost:4000`.
 
-- `GET /api/v1/health` checks that the API process is running.
-- `GET /api/v1/ready` checks that PostgreSQL is reachable.
-- `GET /api/v1/me` returns the signed-in user and current session.
-- `GET /api/v1/creator/stories` requires the CREATOR, MODERATOR or ADMIN role.
-- `GET /api/v1/moderation/reviews` requires the MODERATOR or ADMIN role.
+```bash
+pnpm dev:web
+```
 
-New accounts receive the READER role. The role is a server-owned field and is not accepted from sign-up requests. Creator, moderator and admin access must be granted through trusted administrative operations; no public role-escalation endpoint is provided.
+The website listens on `http://localhost:3000`.
 
-Email/password sign-in is enabled. Email verification delivery is not configured in this milestone, so email verification is not yet enforced. Configure an email provider and enable verification before public production launch.
+## Authentication and account roles
 
-## Website authentication
+Better Auth is mounted at `/api/auth/*` and provides email/password sign-up, sign-in, sign-out and session endpoints.
 
-Copy `apps/web/.env.example` to `apps/web/.env.local` and set `API_SERVER_URL` to the backend origin reachable by the Next.js server. In local development this is `http://localhost:4000`.
+- `GET /api/v1/health` checks the API process.
+- `GET /api/v1/ready` checks PostgreSQL connectivity.
+- `GET /api/v1/me` returns the signed-in user and session.
+- `GET /api/v1/creator/stories` lists the signed-in creator's stories.
+- `POST /api/v1/creator/stories` creates a story draft.
+- `GET /api/v1/creator/stories/:storyId` loads one owned story and its chapters.
+- `PUT /api/v1/creator/stories/:storyId` saves a draft and replaces its ordered chapter/panel content.
+- `POST /api/v1/creator/stories/:storyId/submit` validates and submits a draft for moderation.
+- `GET /api/v1/moderation/reviews` lists submissions for moderators and admins.
 
-The Next.js app proxies `/api/auth/*` and `/api/v1/*` through external rewrites. Browser authentication therefore uses the website origin for its session cookie, while the Next.js server forwards that cookie to the API when validating protected pages. For deployment, configure HTTPS and make sure the Next.js runtime can reach the configured API origin. Set the API's `BETTER_AUTH_URL` and `WEB_ORIGIN` to the public website origin.
+New accounts receive the READER role. The role is server-owned and cannot be selected during public sign-up. Creator, moderator and admin access must be granted through a trusted administrative operation; no public role-escalation endpoint is provided.
 
-The website provides:
-- `/sign-up` and `/sign-in` for email/password accounts.
-- A reactive account control in the site header for the current account and sign-out.
-- Server-validated access to Creator Studio for CREATOR, MODERATOR and ADMIN roles.
-- Server-validated access to the moderation queue for MODERATOR and ADMIN roles.
+## Creator Studio data
 
-Sign-up creates a READER account. A trusted administrator must grant creator or moderator roles before those workspaces become available. The existing creator drafts and review queue still use local browser storage; the pages are protected, but story CRUD and moderation decisions are not yet connected to the database.
+Creator stories, genres, chapters and comic panel URLs are saved in PostgreSQL and scoped to the signed-in author. Drafts can be opened from another device after signing in. The API validates story/chapter fields, validates HTTP(S) panel URLs, and checks that a story has a title, synopsis, genre and at least one complete chapter before submission.
 
-Email verification delivery is not configured yet. Configure an email provider and require verification before allowing public production accounts to publish or moderate content.
+Only DRAFT stories can be edited or submitted. Once submitted, the story is locked until a moderator decision workflow is connected. The UI uses image URLs for comic panels and covers; file uploads and object storage are not part of this milestone.
+
+The existing Admin Review screen still uses its local prototype data for review decisions. The API submission is available through the moderator queue endpoint, but database-backed moderation actions and replacing the local queue UI are a follow-up milestone.
+
+## Website authentication and route protection
+
+The Next.js app proxies `/api/auth/*` and `/api/v1/*` through external rewrites. Browser authentication uses the website origin for its session cookie. The Next.js server forwards that cookie to the API to validate access to protected pages.
+
+- `/sign-up` and `/sign-in` provide email/password account screens.
+- Creator Studio requires CREATOR, MODERATOR or ADMIN.
+- The moderation workspace requires MODERATOR or ADMIN.
+- Accounts without the required role are sent to `/access-denied`.
+
+Set the API's `BETTER_AUTH_URL` and `WEB_ORIGIN` to the public website origin. Configure HTTPS and use an API origin reachable by the Next.js runtime when deploying. Email verification delivery is not configured yet; configure and require it before public production launch.
 
 ## Available scripts
 
@@ -117,9 +126,3 @@ apps/
 packages/           # Shared packages
 docker-compose.yml  # Local PostgreSQL service
 ```
-
-## Current backend scope
-
-The API includes Express 5, Better Auth, Prisma 7 with the PostgreSQL driver adapter, role-aware API middleware, security headers, CORS, health/readiness endpoints, and relational models for users, sessions, linked accounts, verification tokens, stories, chapters, comic panels, genres, library entries, reading progress, and moderation reviews.
-
-The local Creator Studio and Admin Review interfaces are protected by role checks, but their drafts and decisions still use browser storage. Story CRUD, server-side moderation decisions, media uploads and syncing creator work across accounts are follow-up work.
