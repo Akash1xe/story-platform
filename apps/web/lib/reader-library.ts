@@ -1,44 +1,51 @@
-"use client";
-export type StoryProgress = { percent: number; updatedAt: number };
-export type ReaderLibraryData = { savedStoryIds: string[]; progress: Record<string, StoryProgress> };
-const STORAGE_KEY = "storyworld.reader-library.v1";
-export const LIBRARY_CHANGE_EVENT = "storyworld:library-change";
-const emptyLibrary = (): ReaderLibraryData => ({ savedStoryIds: [], progress: {} });
+import type { Story } from "@/lib/demo-content";
+import type { PublicStorySummary } from "@/lib/public-stories";
+import { toCatalogStory } from "@/lib/public-stories";
 
-export function readReaderLibrary(): ReaderLibraryData {
-  if (typeof window === "undefined") return emptyLibrary();
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return emptyLibrary();
-    const parsed: unknown = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object") return emptyLibrary();
-    const candidate = parsed as Partial<ReaderLibraryData>;
-    const savedStoryIds = Array.isArray(candidate.savedStoryIds)
-      ? candidate.savedStoryIds.filter((id): id is string => typeof id === "string")
-      : [];
-    const progress: ReaderLibraryData["progress"] = {};
-    if (candidate.progress && typeof candidate.progress === "object" && !Array.isArray(candidate.progress)) {
-      for (const [storyId, value] of Object.entries(candidate.progress)) {
-        if (value && typeof value === "object" && typeof value.percent === "number" && Number.isFinite(value.percent)) {
-          progress[storyId] = {
-            percent: Math.min(100, Math.max(0, Math.round(value.percent))),
-            updatedAt: typeof value.updatedAt === "number" && Number.isFinite(value.updatedAt) ? value.updatedAt : 0
-          };
-        }
-      }
-    }
-    return { savedStoryIds: [...new Set(savedStoryIds)], progress };
-  } catch {
-    return emptyLibrary();
-  }
-}
+export type LibraryProgressRecord = {
+  story: Story;
+  chapterId: string;
+  chapterNumber: number;
+  chapterTitle: string;
+  percent: number;
+  updatedAt: number;
+};
+export type ReaderLibraryData = {
+  savedStoryIds: string[];
+  savedStories: Story[];
+  continueReading: LibraryProgressRecord[];
+};
+type LibraryResponse = { savedStories: Array<{ savedAt: string; story: PublicStorySummary }> };
+type ProgressResponse = {
+  progress: Array<{
+    progressRatio: number;
+    lastReadAt: string;
+    story: PublicStorySummary;
+    chapter: { id: string; number: number; title: string } | null;
+  }>;
+};
+export const EMPTY_READER_LIBRARY: ReaderLibraryData = { savedStoryIds: [], savedStories: [], continueReading: [] };
 
-export function writeReaderLibrary(data: ReaderLibraryData): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    window.dispatchEvent(new Event(LIBRARY_CHANGE_EVENT));
-  } catch {
-    // Keep reading usable when browser storage is unavailable or full.
-  }
+export async function fetchReaderLibrary(): Promise<ReaderLibraryData> {
+  const [libraryResponse, progressResponse] = await Promise.all([
+    fetch("/api/v1/library", { credentials: "include", cache: "no-store" }),
+    fetch("/api/v1/reading-progress", { credentials: "include", cache: "no-store" }),
+  ]);
+  if (libraryResponse.status === 401 || progressResponse.status === 401) throw new Error("Sign in to view your account library.");
+  if (!libraryResponse.ok || !progressResponse.ok) throw new Error("Your library could not be loaded. Please try again.");
+  const library = await libraryResponse.json() as LibraryResponse;
+  const progress = await progressResponse.json() as ProgressResponse;
+  const savedStories = library.savedStories.map((entry) => toCatalogStory(entry.story));
+  return {
+    savedStoryIds: savedStories.map((story) => story.id),
+    savedStories,
+    continueReading: progress.progress.flatMap((record) => record.chapter ? [{
+      story: toCatalogStory(record.story),
+      chapterId: record.chapter.id,
+      chapterNumber: record.chapter.number,
+      chapterTitle: record.chapter.title,
+      percent: Math.round(record.progressRatio * 100),
+      updatedAt: new Date(record.lastReadAt).getTime(),
+    }] : []),
+  };
 }

@@ -76,6 +76,11 @@ Better Auth is mounted at `/api/auth/*` and provides email/password sign-up, sig
 - `PUT /api/v1/creator/stories/:storyId` saves a draft and replaces its ordered chapter/panel content.
 - `POST /api/v1/creator/stories/:storyId/submit` validates and submits a draft for moderation.
 - `GET /api/v1/moderation/reviews` lists submissions for moderators and admins.
+- `GET /api/v1/library` lists the signed-in reader’s saved published stories.
+- `POST /api/v1/library/:storySlug` saves a published story; `DELETE` removes it.
+- `GET /api/v1/reading-progress` lists the reader’s latest chapter progress.
+- `GET /api/v1/reading-progress/:chapterId` loads the saved position for a chapter.
+- `PUT /api/v1/reading-progress/:chapterId` upserts progress for a published chapter (ratio from 0 to 1).
 
 New accounts receive the READER role. The role is server-owned and cannot be selected during public sign-up. Creator, moderator and admin access must be granted through a trusted administrative operation; no public role-escalation endpoint is provided.
 
@@ -84,6 +89,8 @@ New accounts receive the READER role. The role is server-owned and cannot be sel
 Creator stories, genres, chapters and comic panel URLs are saved in PostgreSQL and scoped to the signed-in author. Drafts can be opened from another device after signing in. The API validates story/chapter fields, validates HTTP(S) panel URLs, and checks that a story has a title, synopsis, genre and at least one complete chapter before submission.
 
 Only DRAFT stories can be edited or submitted. Once submitted, the story is locked until a moderator decision workflow is connected. The UI uses image URLs for comic panels and covers; file uploads and object storage are not part of this milestone.
+
+Reader bookmarks and chapter progress are account-scoped in PostgreSQL. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter.
 
 The existing Admin Review screen still uses its local prototype data for review decisions. The API submission is available through the moderator queue endpoint, but database-backed moderation actions and replacing the local queue UI are a follow-up milestone.
 

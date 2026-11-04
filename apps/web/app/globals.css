@@ -2703,3 +2703,6 @@ input:focus-visible {
 .auth-message-actions .auth-submit,.auth-message-actions .button-secondary { min-height:42px; padding:0 15px; font-size:10px; }
 @media(max-width:760px) { .auth-user>span { max-width:82px; } .auth-user small { display:none; } .auth-sign-out span { display:none; } .auth-sign-out { width:34px; padding:0; } }
 @media(max-width:540px) { .auth-nav { gap:8px; } .auth-get-started { min-height:35px; padding:0 9px; font-size:9px; } .auth-card { padding:25px 21px; } .auth-card h1 { font-size:27px; } }
+
+/* Account-backed reader library */
+.library-inline-error { display:block; margin:9px 0 0; color:#e5aeb5; font-size:10px; line-height:1.6; }
