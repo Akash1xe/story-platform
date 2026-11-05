@@ -82,7 +82,7 @@ export default function PublicStoryReader({ data }: PublicStoryReaderProps) {
       </div></header>
       <main className={isComic ? "reader-main reader-main--comic" : "reader-main"}>
         <div className="reader-heading"><div className="reader-kicker">{isComic ? "COMIC EPISODE" : "CHAPTER"} <span>·</span> {String(chapter.number).padStart(2, "0")}</div><h1>{chapter.title}</h1><p>{story.title}</p></div>
-        {isComic ? <section className="comic-reader" aria-label="Comic panels">{chapter.panels.map((panel) => <figure className="public-comic-panel" key={panel.id}><img src={panel.imageUrl} alt={panel.altText || panel.caption || `${chapter.title}, panel ${panel.position}`} loading="lazy" />{panel.caption && <figcaption>{panel.caption}</figcaption>}</figure>)}</section> : (
+        {isComic ? <section className="comic-reader" aria-label="Comic panels">{chapter.panels.map((panel) => <figure className="public-comic-panel" key={panel.id}><img src={panel.imageUrl} alt={panel.altText || (panel.caption ? "" : `${chapter.title}, panel ${panel.position}`)} loading="lazy" />{panel.caption && <figcaption>{panel.caption}</figcaption>}</figure>)}</section> : (
           <article className={`reader-prose reader-prose--scale-${fontScale}`} aria-label="Chapter text">{(chapter.body ?? "").split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => <p className={index === 0 ? "reader-prose-opening" : ""} key={index}>{paragraph}</p>)}</article>
         )}
         <nav className="public-reader-footer" aria-label="Chapter navigation"><Link href={`/stories/${story.slug}`}>Back to all chapters <ArrowLeft size={15} /></Link></nav>
