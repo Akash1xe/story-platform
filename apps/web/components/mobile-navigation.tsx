@@ -1,0 +1,36 @@
+"use client";
+
+import Link from "next/link";
+import { BookOpen, Clock3, Compass, Sparkles } from "lucide-react";
+
+type MobileNavigationProps = {
+  active: "home" | "discover";
+};
+
+const items = [
+  { id: "home", href: "/", label: "Home", icon: BookOpen },
+  { id: "discover", href: "/discover", label: "Discover", icon: Compass },
+  { id: "library", href: "/library", label: "My Library", icon: Clock3 },
+  { id: "create", href: "/#creator", label: "Create", icon: Sparkles },
+] as const;
+
+export function MobileNavigation({ active }: MobileNavigationProps) {
+  return (
+    <nav className="mobile-nav" aria-label="Mobile navigation">
+      {items.map(({ id, href, label, icon: Icon }) => {
+        const isActive = id === active;
+        return (
+          <Link
+            key={id}
+            href={href}
+            className={isActive ? "mobile-nav-active" : undefined}
+            aria-current={isActive ? "page" : undefined}
+          >
+            <Icon size={19} />
+            <span>{label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}

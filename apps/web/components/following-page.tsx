@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, BookOpen, Compass, LoaderCircle, UserRound, Users } from "lucide-react";
+import { SiteHeader } from "@/components/site-header";
 import { AuthNav } from "@/components/auth-nav";
 import { listFollowedCreators, unfollowCreator, type FollowedCreator } from "@/lib/creator-follows";
 import styles from "./following-page.module.css";
@@ -47,22 +48,7 @@ export default function FollowingPage() {
 
   return (
     <>
-      <header className="site-header">
-        <div className="header-inner">
-          <Link href="/" className="brand" aria-label="StoryWorld home">
-            <span className="brand-icon"><BookOpen size={20} /></span>
-            <span>StoryWorld<span className="brand-period">.</span></span>
-          </Link>
-          <nav className="desktop-nav" aria-label="Main navigation">
-            <Link href="/">Home</Link>
-            <Link href="/discover">Discover</Link>
-            <Link href="/#genres">Genres</Link>
-            <Link href="/library">My Library</Link>
-            <Link className="nav-active" href="/following">Following</Link>
-          </nav>
-          <div className="header-actions"><AuthNav /></div>
-        </div>
-      </header>
+            <SiteHeader active="following" actions={<AuthNav />} />
 
       <main className={styles.shell}>
         <section className={styles.hero}>

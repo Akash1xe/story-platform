@@ -36,6 +36,7 @@ import {
   submitCreatorStory
 } from "@/lib/creator-api";
 import { genres } from "@/lib/demo-content";
+import { SiteHeader } from "@/components/site-header";
 import { AuthNav } from "@/components/auth-nav";
 
 type CreatorWorkspaceProps = {
@@ -515,28 +516,17 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
   );
 }
 
-export function CreatorHeader({ active }: { active: "studio" | "reviews" | "analytics" }) {
+export function CreatorHeader({ active }: { active: "studio" | "reviews" | "analytics" | "profile" }) {
   return (
-    <header className="site-header">
-      <div className="header-inner">
-        <Link href="/" className="brand" aria-label="StoryWorld home">
-          <span className="brand-icon"><BookOpen size={20} /></span>
-          <span>StoryWorld<span className="brand-period">.</span></span>
-        </Link>
-        <nav className="desktop-nav" aria-label="Creator navigation">
-          <Link href="/">Home</Link>
-          <Link href="/discover">Discover</Link>
-          <Link href="/library">My Library</Link>
-          <Link className={active === "studio" ? "nav-active" : ""} href="/creator">Creator Studio</Link>
-          <Link className={active === "reviews" ? "nav-active" : ""} href="/creator/reviews">Review history</Link>
-          <Link className={active === "analytics" ? "nav-active" : ""} href="/creator/analytics">Analytics</Link>
-          <Link href="/creator/profile">Profile settings</Link>
-        </nav>
-        <div className="header-actions">
+    <SiteHeader
+      variant="creator"
+      active={active}
+      actions={
+        <>
           <Link href="/creator/new" className="creator-button"><Plus size={14} /> New story</Link>
           <AuthNav />
-        </div>
-      </div>
-    </header>
+        </>
+      }
+    />
   );
 }

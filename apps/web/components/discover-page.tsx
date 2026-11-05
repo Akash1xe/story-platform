@@ -18,7 +18,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import StoryCard from "@/components/story-card";
+import { SiteHeader } from "@/components/site-header";
 import NotificationBell from "@/components/notification-bell";
+import { MobileNavigation } from "@/components/mobile-navigation";
 import type { Story } from "@/lib/demo-content";
 import {
   fetchPublicStoryCatalog,
@@ -174,28 +176,17 @@ export default function DiscoverPage({
 
   return (
     <>
-      <header className="site-header">
-        <div className="header-inner">
-          <Link href="/" className="brand" aria-label="StoryWorld home">
-            <span className="brand-icon"><BookOpen size={20} /></span>
-            <span>StoryWorld<span className="brand-period">.</span></span>
-          </Link>
-          <nav className="desktop-nav" aria-label="Main navigation">
-            <Link href="/">Home</Link>
-            <Link className="nav-active" href="/discover">Discover</Link>
-            <Link href="/#genres">Genres</Link>
-            <Link href="/library">My Library</Link>
-            <Link href="/following">Following</Link>
-            <Link href="/creator">Creators</Link>
-          </nav>
-          <div className="header-actions">
+            <SiteHeader
+        active="discover"
+        actions={
+          <>
             <NotificationBell />
             <Link href="/library" className="profile-button" aria-label="My Library">
               <BookOpen size={17} />
             </Link>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="discover-shell">
         <div className="discover-breadcrumb">
@@ -458,12 +449,7 @@ export default function DiscoverPage({
         </div>
       </main>
 
-      <nav className="mobile-nav" aria-label="Mobile navigation">
-        <Link href="/"><BookOpen size={19} /><span>Home</span></Link>
-        <Link href="/discover" className="mobile-nav-active"><Compass size={19} /><span>Discover</span></Link>
-        <Link href="/library"><Clock3 size={19} /><span>My Library</span></Link>
-        <Link href="/#creator"><Sparkles size={19} /><span>Create</span></Link>
-      </nav>
+            <MobileNavigation active="discover" />
     </>
   );
 }
