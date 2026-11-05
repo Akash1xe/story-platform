@@ -1,0 +1,58 @@
+.section {
+  width: min(820px, 100%);
+  margin: 58px auto 24px;
+  padding: 28px;
+  border: 1px solid #2d3340;
+  border-radius: 16px;
+  background: #131823;
+}
+.heading { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.eyebrow { color: #bda9fb; font-size: 9px; font-weight: 800; letter-spacing: 1.4px; }
+.heading h2 { display: flex; align-items: center; gap: 9px; margin: 9px 0 6px; color: #f3f0fa; font-size: 22px; letter-spacing: -.65px; }
+.heading h2 svg { color: #bda9fb; }
+.heading h2 span { display: inline-grid; min-width: 25px; height: 22px; place-items: center; padding: 0 6px; border: 1px solid #423955; border-radius: 20px; color: #c6b7ed; font-size: 10px; letter-spacing: 0; }
+.heading p { margin: 0; color: #999eae; font-size: 11px; }
+.form { padding: 17px; border: 1px solid #343b4a; border-radius: 12px; background: #191f2b; }
+.form label { display: block; margin-bottom: 9px; color: #e5e1ed; font-size: 11px; font-weight: 700; }
+.form textarea, .editForm textarea { width: 100%; min-height: 82px; resize: vertical; padding: 11px 12px; border: 1px solid #3b4353; border-radius: 8px; outline: none; background: #10151e; color: #f3f0f8; font: inherit; font-size: 11px; line-height: 1.65; }
+.form textarea:focus, .editForm textarea:focus { border-color: #8e79c8; }
+.form textarea::placeholder { color: #747c8e; }
+.formFooter { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; }
+.formFooter span { color: #878d9c; font-size: 9px; }
+.formFooter button, .editForm button { min-height: 35px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; border: 0; border-radius: 8px; background: #a78bfa; color: #191323; cursor: pointer; font: inherit; font-size: 10px; font-weight: 750; }
+.formFooter button:disabled, .editForm button:disabled { cursor: not-allowed; opacity: .55; }
+.signInNotice, .formNotice { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 14px 16px; border: 1px solid #3a354b; border-radius: 10px; background: #1b1a29; }
+.signInNotice p { margin: 0; color: #b7b3c4; font-size: 10px; line-height: 1.6; }
+.signInNotice a { color: #c7b5ff; font-size: 10px; font-weight: 750; white-space: nowrap; }
+.formNotice { color: #a9aebe; font-size: 10px; }
+.error { margin: 0 0 14px; padding: 10px 12px; border: 1px solid #694448; border-radius: 8px; background: #2a1b21; color: #e6b2b7; font-size: 10px; line-height: 1.6; }
+.list { margin-top: 14px; }
+.empty { padding: 20px 0; color: #9298a8; font-size: 11px; text-align: center; }
+.comment { display: flex; gap: 12px; padding: 18px 2px; border-bottom: 1px solid #292f3b; }
+.avatar { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center; overflow: hidden; border: 1px solid #51466b; border-radius: 50%; background: #272238; color: #d5c6ff; font-size: 13px; font-weight: 750; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.commentContent { flex: 1; min-width: 0; }
+.commentMeta { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.commentMeta > div:first-child { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 9px; }
+.commentMeta strong { color: #eeebf5; font-size: 10px; }
+.commentMeta span, .commentMeta time, .commentMeta small { color: #858c9d; font-size: 9px; }
+.commentMeta span { color: #b19be9; }
+.actions { display: flex; gap: 5px; }
+.actions button { width: 27px; height: 27px; display: grid; place-items: center; border: 1px solid #343b49; border-radius: 7px; background: #1a202b; color: #aeb3c1; cursor: pointer; }
+.actions button:hover { border-color: #7866a9; color: #e4dcf8; }
+.actions button:disabled { cursor: wait; opacity: .55; }
+.commentBody { margin: 10px 0 0; color: #c8c7d1; font-size: 11px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.editForm { margin-top: 10px; }
+.editForm > div { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.editForm .cancelButton { border: 1px solid #424858; background: #202633; color: #c0c1cb; }
+.loadMore { min-height: 38px; display: block; margin: 17px auto 0; padding: 0 15px; border: 1px solid #47405b; border-radius: 8px; background: #1d1a2b; color: #cabaff; cursor: pointer; font: inherit; font-size: 10px; font-weight: 700; }
+.loadMore:disabled { cursor: wait; opacity: .65; }
+@media (max-width: 600px) {
+  .section { margin-top: 40px; padding: 19px 14px; }
+  .heading h2 { font-size: 19px; }
+  .signInNotice { align-items: flex-start; flex-direction: column; }
+  .comment { gap: 9px; }
+  .avatar { width: 31px; height: 31px; flex-basis: 31px; }
+  .commentMeta { flex-direction: column; gap: 8px; }
+  .actions { align-self: flex-end; }
+}
