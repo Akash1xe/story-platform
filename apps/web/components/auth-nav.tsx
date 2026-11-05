@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LogOut, UserRound } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import NotificationBell from "@/components/notification-bell";
 
 export function AuthNav() {
   const router = useRouter();
@@ -48,6 +49,7 @@ export function AuthNav() {
 
   return (
     <div className="auth-nav auth-nav--signed-in">
+      <NotificationBell />
       <span className="auth-user" title={session.user.email}>
         <UserRound size={15} aria-hidden="true" />
         <span>{session.user.name || session.user.email}</span>

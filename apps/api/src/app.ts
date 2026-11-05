@@ -14,6 +14,7 @@ import publicStoriesRouter from "./routes/public-stories.js";
 import publicCreatorsRouter from "./routes/public-creators.js";
 import readerLibraryRouter from "./routes/reader-library.js";
 import chapterCommentsRouter from "./routes/chapter-comments.js";
+import notificationsRouter from "./routes/notifications.js";
 
 export const app = express();
 
@@ -68,6 +69,7 @@ app.use("/api/v1/following", creatorFollowsRouter);
 app.use("/api/v1/moderation/reviews", moderationRouter);
 app.use("/api/v1", chapterCommentsRouter);
 app.use("/api/v1", readerLibraryRouter);
+app.use("/api/v1/notifications", notificationsRouter);
 
 app.use((_request, response) => {
   response.status(404).json({

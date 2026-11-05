@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowDownAZ, ArrowLeft, ArrowRight, BookOpen, Check, Clock3, Compass, FilterX, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import StoryCard from "@/components/story-card";
+import NotificationBell from "@/components/notification-bell";
 import type { Story, StoryType } from "@/lib/demo-content";
 
 type FormatFilter = "All formats" | StoryType;
@@ -52,7 +53,7 @@ export default function DiscoverPage({ stories, genres }: DiscoverPageProps) {
     <header className="site-header"><div className="header-inner">
       <Link href="/" className="brand"><span className="brand-icon"><BookOpen size={20} /></span><span>StoryWorld<span className="brand-period">.</span></span></Link>
       <nav className="desktop-nav" aria-label="Main navigation"><Link href="/">Home</Link><Link className="nav-active" href="/discover">Discover</Link><Link href="/#genres">Genres</Link><Link href="/library">My Library</Link><Link href="/creator">Creators</Link></nav>
-      <div className="header-actions"><Link href="/library" className="profile-button" aria-label="My Library"><BookOpen size={17} /></Link></div>
+      <div className="header-actions"><NotificationBell /><Link href="/library" className="profile-button" aria-label="My Library"><BookOpen size={17} /></Link></div>
     </div></header>
     <main className="discover-shell">
       <div className="discover-breadcrumb"><Link href="/"><ArrowLeft size={14} /> Home</Link><span>/</span><span>Discover</span></div>

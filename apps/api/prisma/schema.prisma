@@ -37,6 +37,10 @@ enum ReviewDecision {
   CHANGES_REQUESTED
 }
 
+enum NotificationType {
+  NEW_STORY
+}
+
 model User {
   id                String             @id @default(cuid())
   email             String             @unique
@@ -58,6 +62,7 @@ model User {
   followingCreators CreatorFollow[]    @relation("CreatorFollowing")
   creatorFollowers  CreatorFollow[]    @relation("CreatorFollowers")
   chapterCommentsAuthored ChapterComment[]
+  notifications          Notification[] @relation("NotificationRecipient")
 }
 
 model CreatorFollow {
@@ -136,6 +141,7 @@ model Story {
   libraryEntries    LibraryEntry[]
   readingProgress   ReadingProgress[]
   moderationReviews ModerationReview[]
+  notifications     Notification[]
 
   @@index([authorId, updatedAt])
   @@index([status, publishedAt])
@@ -247,4 +253,19 @@ model ChapterComment {
 
   @@index([chapterId, createdAt])
   @@index([authorId, createdAt])
+}
+
+
+model Notification {
+  id          String           @id @default(cuid())
+  recipientId String
+  storyId     String
+  type        NotificationType @default(NEW_STORY)
+  readAt      DateTime?
+  createdAt   DateTime         @default(now())
+  recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  story       Story            @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, createdAt])
+  @@index([recipientId, readAt, createdAt])
 }

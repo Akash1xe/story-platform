@@ -46,9 +46,10 @@ pnpm --filter @story-platform/api exec prisma db push
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105000000_add_creator_follows
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105010000_add_creator_profile_fields
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105020000_add_chapter_comments
+pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105030000_add_notifications
 ```
 
-The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the three `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
+The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the four `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
 
 Start the API:
 
@@ -96,6 +97,8 @@ Better Auth is mounted at `/api/auth/*` and provides email/password sign-up, sig
 - `GET /api/v1/stories/:slug/chapters/:chapterNumber/comments` lists public chapter comments (20 per page by default, up to 50).
 - `POST /api/v1/stories/:slug/chapters/:chapterNumber/comments` adds a comment to a published chapter for a signed-in reader (1–1500 characters).
 - `PATCH /api/v1/chapter-comments/:commentId` edits the signed-in author’s own comment; `DELETE` removes it.
+- `GET /api/v1/notifications` lists the signed-in reader’s latest notifications and unread count.
+- `PATCH /api/v1/notifications/:notificationId/read` marks one notification as read; `PATCH /api/v1/notifications/read-all` marks all as read.
 
 New accounts receive the READER role. The role is server-owned and cannot be selected during public sign-up. Creator, moderator and admin access must be granted through a trusted administrative operation; no public role-escalation endpoint is provided.
 
@@ -109,7 +112,7 @@ Public creator pages are available at `/creators/:creatorId`; the route accepts 
 
 The Prisma `User` model stores nullable creator profile fields so existing reader accounts remain valid. A fresh local database includes these fields when the initial migration is generated. Existing databases should apply pending committed migrations with `pnpm db:deploy` before deploying creator profile, follow, or chapter comment features.
 
-Creator follows, reader bookmarks, chapter progress and chapter comments are stored in PostgreSQL. Apply the committed CreatorFollow migration with `pnpm db:deploy` before deploying. The public creator profile includes a live follower count and a follow/unfollow control for signed-in readers. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter. Chapter comments are public to readers of published chapters; posting requires sign-in, and only the comment author can edit or delete their own comment.
+Creator follows, reader bookmarks, chapter progress and chapter comments are stored in PostgreSQL. Apply the committed CreatorFollow migration with `pnpm db:deploy` before deploying. The public creator profile includes a live follower count and a follow/unfollow control for signed-in readers. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter. Chapter comments are public to readers of published chapters; posting requires sign-in, and only the comment author can edit or delete their own comment. When a moderator approves a creator submission, followers receive an in-app notification in the same database transaction; no email or push delivery is configured.
 
 The existing Admin Review screen still uses its local prototype data for review decisions. The API submission is available through the moderator queue endpoint, but database-backed moderation actions and replacing the local queue UI are a follow-up milestone.
 

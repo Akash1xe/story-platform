@@ -1,0 +1,32 @@
+.link {
+  position: relative;
+  width: 37px;
+  height: 37px;
+  flex: 0 0 37px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid #373d4b;
+  border-radius: 9px;
+  color: #d5c9f5;
+  background: #171c27;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.link:hover { border-color: #7866a9; color: #fff; background: #211d30; }
+.count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 17px;
+  height: 17px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #0d1017;
+  border-radius: 20px;
+  background: #a78bfa;
+  color: #191323;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+}
