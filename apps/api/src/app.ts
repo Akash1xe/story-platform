@@ -68,8 +68,8 @@ app.use("/api/v1/creator/profile", creatorProfileRouter);
 app.use("/api/v1/following", creatorFollowsRouter);
 app.use("/api/v1/moderation/reviews", moderationRouter);
 app.use("/api/v1", chapterCommentsRouter);
-app.use("/api/v1", readerLibraryRouter);
 app.use("/api/v1/notifications", notificationsRouter);
+app.use("/api/v1", readerLibraryRouter);
 
 app.use((_request, response) => {
   response.status(404).json({
