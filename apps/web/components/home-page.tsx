@@ -208,7 +208,7 @@ export default function HomePage({ stories, genres, catalogUnavailable = false }
               <div>
                 <span className="eyebrow">BASED ON YOUR READING</span>
                 <h2 id="recommendations-title">Picked for you</h2>
-                <p>Stories selected from the genres you save, read and rate.</p>
+                <p>A mix of genre matches and fresh published stories.</p>
               </div>
               <span className="section-icon"><Sparkles size={21} /></span>
             </div>

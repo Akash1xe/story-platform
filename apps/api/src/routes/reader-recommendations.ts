@@ -38,7 +38,6 @@ router.get("/", requireAuthenticatedUser, async (_request, response, next) => {
         where: { userId, story: publishedStoryWhere },
         select: { story: { select: signalStorySelect } },
         orderBy: { savedAt: "desc" },
-        take: 50,
       }),
       prisma.readingProgress.findMany({
         where: {
@@ -49,13 +48,11 @@ router.get("/", requireAuthenticatedUser, async (_request, response, next) => {
         },
         select: { story: { select: signalStorySelect } },
         orderBy: { lastReadAt: "desc" },
-        take: 50,
       }),
       prisma.storyRating.findMany({
         where: { userId, story: publishedStoryWhere },
         select: { value: true, story: { select: signalStorySelect } },
         orderBy: { updatedAt: "desc" },
-        take: 50,
       }),
     ]);
 
@@ -89,6 +86,7 @@ router.get("/", requireAuthenticatedUser, async (_request, response, next) => {
     let candidates = await prisma.story.findMany({
       where: {
         ...publishedStoryWhere,
+        authorId: { not: userId },
         id: { notIn: excludedIds },
         ...(interestedGenreIds.length
           ? { genres: { some: { genreId: { in: interestedGenreIds } } } }
@@ -106,6 +104,7 @@ router.get("/", requireAuthenticatedUser, async (_request, response, next) => {
       const fallbackStories = await prisma.story.findMany({
         where: {
           ...publishedStoryWhere,
+          authorId: { not: userId },
           id: { notIn: [...excludedIds, ...candidateIds] },
         },
         include: catalogInclude,
