@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Clock3, FileText, LoaderCircle, MessageSquareText } from "lucide-react";
-import { AuthNav } from "@/components/auth-nav";
 import { CreatorHeader } from "@/components/creator-workspace";
 import {
   listCreatorReviews,
@@ -131,8 +130,11 @@ export function CreatorReviewHistory() {
                         <h2>{review.story.title || "Untitled story"}</h2>
                         <p>{formatLabel(review.story.format)} <span>·</span> Reviewed by {review.reviewer.displayName}</p>
                       </div>
-                      <Link href={"/creator/" + encodeURIComponent(review.story.id)} className={styles.storyLink}>
-                        Open story <ArrowRight size={13} />
+                      <Link
+                        href={review.story.status === "PUBLISHED" ? "/stories/" + encodeURIComponent(review.story.slug) : "/creator/" + encodeURIComponent(review.story.id)}
+                        className={styles.storyLink}
+                      >
+                        {review.story.status === "PUBLISHED" ? "View story" : "Open in Studio"} <ArrowRight size={13} />
                       </Link>
                     </div>
 
