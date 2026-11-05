@@ -94,7 +94,7 @@ export default function HomePage({ stories, genres, catalogUnavailable = false }
 
   return (
     <>
-            <SiteHeader
+      <SiteHeader
         active="home"
         actions={
           <>
@@ -303,7 +303,7 @@ export default function HomePage({ stories, genres, catalogUnavailable = false }
         </footer>
       </main>
 
-            <MobileNavigation active="home" />
+      <MobileNavigation active="home" />
     </>
   );
 }

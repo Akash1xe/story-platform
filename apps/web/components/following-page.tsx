@@ -48,7 +48,7 @@ export default function FollowingPage() {
 
   return (
     <>
-            <SiteHeader active="following" actions={<AuthNav />} />
+      <SiteHeader active="following" actions={<AuthNav />} />
 
       <main className={styles.shell}>
         <section className={styles.hero}>

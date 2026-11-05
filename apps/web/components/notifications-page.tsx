@@ -149,7 +149,7 @@ export default function NotificationsPage() {
 
   return (
     <>
-            <SiteHeader brandIcon={<Bell size={19} />} actions={<AuthNav />} />
+      <SiteHeader brandIcon={<Bell size={19} />} actions={<AuthNav />} />
 
       <main className={styles.shell}>
         <Link className={styles.back} href="/"><ArrowLeft size={14} /> Back to StoryWorld</Link>

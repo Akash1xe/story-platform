@@ -2,8 +2,20 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 
+type SiteHeaderActive =
+  | "home"
+  | "discover"
+  | "genres"
+  | "library"
+  | "following"
+  | "creator"
+  | "studio"
+  | "reviews"
+  | "analytics"
+  | "profile";
+
 type SiteHeaderProps = {
-  active?: string;
+  active?: SiteHeaderActive;
   variant?: "reader" | "creator";
   actions?: ReactNode;
   brandIcon?: ReactNode;

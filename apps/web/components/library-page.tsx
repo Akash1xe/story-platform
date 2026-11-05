@@ -15,7 +15,7 @@ export default function LibraryPage() {
   const { library, isReady, isAuthenticated, error } = useReaderLibrary();
   return (
     <>
-            <SiteHeader
+      <SiteHeader
         active="library"
         actions={
           <>

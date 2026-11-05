@@ -176,7 +176,7 @@ export default function DiscoverPage({
 
   return (
     <>
-            <SiteHeader
+      <SiteHeader
         active="discover"
         actions={
           <>
@@ -449,7 +449,7 @@ export default function DiscoverPage({
         </div>
       </main>
 
-            <MobileNavigation active="discover" />
+      <MobileNavigation active="discover" />
     </>
   );
 }
