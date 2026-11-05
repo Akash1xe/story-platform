@@ -8,10 +8,11 @@ import styles from "./notification-bell.module.css";
 
 export default function NotificationBell() {
   const { data: session, isPending } = authClient.useSession();
+  const sessionUserId = session?.user.id;
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    if (isPending || !session) {
+    if (isPending || !sessionUserId) {
       setUnreadCount(0);
       return;
     }
@@ -40,7 +41,7 @@ export default function NotificationBell() {
       window.removeEventListener("focus", refreshCount);
       window.removeEventListener("storyworld:notifications-updated", refreshCount);
     };
-  }, [isPending, session?.user.id]);
+  }, [isPending, sessionUserId]);
 
   if (isPending || !session) return null;
 
