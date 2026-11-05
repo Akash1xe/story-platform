@@ -38,12 +38,16 @@ Replace `BETTER_AUTH_SECRET` with a fresh secret of at least 32 characters:
 openssl rand -base64 32
 ```
 
-Generate the Prisma client and create the initial migration for a fresh local database:
+Generate the Prisma client and sync the current schema into a fresh local database:
 
 ```bash
 pnpm --filter @story-platform/api db:generate
-pnpm --filter @story-platform/api db:migrate --name init
+pnpm --filter @story-platform/api exec prisma db push
+pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105000000_add_creator_follows
+pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105010000_add_creator_profile_fields
 ```
+
+The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the two `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
 
 Start the API:
 
