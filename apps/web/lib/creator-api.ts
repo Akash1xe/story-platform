@@ -94,7 +94,7 @@ export type StoryDraftInput = {
   format: CreatorFormat;
   publicationStatus: "Ongoing" | "Completed";
   coverImage: string;
-  chapters: Array<Pick<CreatorChapter, "title" | "summary" | "body" | "panelUrls" | "panelAltTexts" | "panelCaptions">>;
+  chapters: Array<Pick<CreatorChapter, "title" | "summary" | "body" | "panelUrls" | "panelAltTexts" | "panelCaptions"> & { chapterId?: string }>;
 };
 
 const STORIES_ENDPOINT = "/api/v1/creator/stories";
@@ -135,6 +135,7 @@ export function fromApiStory(story: ApiStory): CreatorStory {
       const panels = chapter.panels.slice().sort((left, right) => left.position - right.position);
       return {
         id: chapter.id,
+        serverChapterId: chapter.id,
         title: chapter.title,
         summary: chapter.summary ?? "",
         body: chapter.body ?? "",

@@ -7,6 +7,8 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
+  ChevronDown,
+  ChevronUp,
   BookOpen,
   CheckCircle2,
   Clock3,
@@ -271,9 +273,13 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
       return;
     }
 
+    const existingChapter = editingChapterId
+      ? chapters.find((item) => item.id === editingChapterId)
+      : undefined;
     const timestamp = Date.now();
     const chapter: CreatorChapter = {
       id: editingChapterId ?? makeId(),
+      serverChapterId: existingChapter?.serverChapterId,
       title: chapterTitle.trim(),
       summary: chapterSummary.trim(),
       body: chapterBody.trim(),
@@ -305,6 +311,20 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
   function removeChapter(chapterId: string) {
     setChapters((current) => current.filter((chapter) => chapter.id !== chapterId));
     if (editingChapterId === chapterId) resetChapterForm();
+  }
+
+  function moveChapter(index: number, direction: -1 | 1) {
+    setChapters((current) => {
+      const target = index + direction;
+      if (target < 0 || target >= current.length) return current;
+      const reordered = [...current];
+      const [chapter] = reordered.splice(index, 1);
+      if (!chapter) return current;
+      reordered.splice(target, 0, chapter);
+      return reordered;
+    });
+    setError("");
+    setNotice("Chapter order changed. Save the draft to apply the new reading order.");
   }
 
   async function persistStory(nextStatus: CreatorReviewStatus) {
@@ -342,6 +362,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
         publicationStatus,
         coverImage: coverImage.trim(),
         chapters: chapters.map((chapter) => ({
+          chapterId: chapter.serverChapterId,
           title: chapter.title,
           summary: chapter.summary ?? "",
           body: chapter.body,
@@ -354,6 +375,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
       // Keep the database ID immediately so a failed submit can be retried
       // without accidentally creating a second story.
       setSavedStoryId(saved.id);
+      setChapters(saved.chapters);
       setStories((current) => [
         saved,
         ...current.filter((story) => story.id !== saved.id),
@@ -427,6 +449,8 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
                   <article className={"creator-chapter-item" + (editingChapterId === chapter.id ? " is-editing" : "")} key={chapter.id}>
                     <span className="creator-chapter-number">{String(index + 1).padStart(2, "0")}</span>
                     <div className="creator-chapter-copy"><strong>{chapter.title}</strong><span>{format === "Comic" ? chapter.panelUrls.length + " panel image URLs" : chapter.body.trim().split(/\s+/).filter(Boolean).length + " words"}</span></div>
+                    <button type="button" className="creator-icon-button creator-chapter-order-button" onClick={() => moveChapter(index, -1)} disabled={index === 0} aria-label={"Move " + chapter.title + " up"} title="Move up"><ChevronUp size={15} /></button>
+                    <button type="button" className="creator-icon-button creator-chapter-order-button" onClick={() => moveChapter(index, 1)} disabled={index === chapters.length - 1} aria-label={"Move " + chapter.title + " down"} title="Move down"><ChevronDown size={15} /></button>
                     <button type="button" className="creator-icon-button" onClick={() => editChapter(chapter)} aria-label={"Edit " + chapter.title}>Edit</button>
                     <button type="button" className="creator-icon-button creator-icon-button--danger" onClick={() => removeChapter(chapter.id)} aria-label={"Delete " + chapter.title}><Trash2 size={14} /></button>
                   </article>
