@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Bookmark, Clock3, Compass, LibraryBig } from "lucide-react";
+import { ArrowRight, Bookmark, Clock3, Compass, LibraryBig } from "lucide-react";
 import StoryCard from "@/components/story-card";
 import { SiteHeader } from "@/components/site-header";
 import NotificationBell from "@/components/notification-bell";
