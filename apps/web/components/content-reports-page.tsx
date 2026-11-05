@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertCircle, ArrowLeft, Archive, Check, CheckCheck, ExternalLink, EyeOff, Flag, LoaderCircle, ShieldCheck, Trash2, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, CheckCheck, ExternalLink, EyeOff, Flag, LoaderCircle, ShieldCheck, Trash2, X } from "lucide-react";
 import { AuthNav } from "@/components/auth-nav";
 import styles from "./content-reports-page.module.css";
 
