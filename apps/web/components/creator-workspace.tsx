@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -38,12 +38,38 @@ import {
 import { genres } from "@/lib/demo-content";
 import { SiteHeader } from "@/components/site-header";
 import { AuthNav } from "@/components/auth-nav";
+import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
+import editorStatusStyles from "./creator-editor-status.module.css";
 
 type CreatorWorkspaceProps = {
   storyId?: string;
 };
 
 const FORMAT_OPTIONS: CreatorFormat[] = ["Comic", "Novel", "Short story"];
+
+type DraftSnapshotInput = Pick<
+  CreatorStory,
+  "title" | "synopsis" | "genre" | "format" | "publicationStatus" | "coverImage" | "chapters"
+>;
+
+function createDraftSnapshot(story: DraftSnapshotInput): string {
+  return JSON.stringify({
+    title: story.title.trim(),
+    synopsis: story.synopsis.trim(),
+    genre: story.genre,
+    format: story.format,
+    publicationStatus: story.publicationStatus,
+    coverImage: story.coverImage.trim(),
+    chapters: story.chapters.map((chapter) => ({
+      title: chapter.title,
+      summary: chapter.summary ?? "",
+      body: chapter.body,
+      panelUrls: chapter.panelUrls,
+      panelAltTexts: chapter.panelAltTexts ?? [],
+      panelCaptions: chapter.panelCaptions ?? [],
+    })),
+  });
+}
 
 function makeId(): string {
   return window.crypto?.randomUUID?.() ?? ("story-" + Date.now() + "-" + Math.random().toString(36).slice(2));
@@ -190,12 +216,68 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
   const [loadError, setLoadError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [savedStoryId, setSavedStoryId] = useState(storyId ?? "");
+  const savedDraftSnapshotRef = useRef<string | null>(null);
+
+  const draftSnapshot = createDraftSnapshot({
+    title,
+    synopsis,
+    genre,
+    format,
+    publicationStatus,
+    coverImage,
+    chapters,
+  });
+  const chapterBeingEdited = editingChapterId
+    ? chapters.find((chapter) => chapter.id === editingChapterId)
+    : undefined;
+  const isChapterEditorDirty = editingChapterId
+    ? !chapterBeingEdited ||
+      chapterTitle !== chapterBeingEdited.title ||
+      chapterSummary !== (chapterBeingEdited.summary ?? "") ||
+      chapterBody !== chapterBeingEdited.body ||
+      panelUrlsText !== chapterBeingEdited.panelUrls.join("\n") ||
+      panelAltTextsText !== (chapterBeingEdited.panelAltTexts ?? []).join("\n") ||
+      panelCaptionsText !== (chapterBeingEdited.panelCaptions ?? []).join("\n")
+    : Boolean(
+        chapterTitle.trim() ||
+        chapterSummary.trim() ||
+        chapterBody.trim() ||
+        panelUrlsText.trim() ||
+        panelAltTextsText.trim() ||
+        panelCaptionsText.trim()
+      );
+  const currentEditorSnapshot = JSON.stringify({
+    draftSnapshot,
+    editingChapterId,
+    chapterTitle,
+    chapterSummary,
+    chapterBody,
+    panelUrlsText,
+    panelAltTextsText,
+    panelCaptionsText,
+  });
+  const currentEditorSnapshotRef = useRef(currentEditorSnapshot);
+  currentEditorSnapshotRef.current = currentEditorSnapshot;
+  const hasUnsavedChanges = savedDraftSnapshotRef.current !== null && (
+    draftSnapshot !== savedDraftSnapshotRef.current || isChapterEditorDirty
+  );
+
+  useUnsavedChangesWarning(hasUnsavedChanges);
 
   useEffect(() => {
     let active = true;
 
     async function loadStory() {
       if (!storyId) {
+        savedDraftSnapshotRef.current = createDraftSnapshot({
+          title: "",
+          synopsis: "",
+          genre: "",
+          format: "Comic",
+          publicationStatus: "Ongoing",
+          coverImage: "",
+          chapters: [],
+        });
         if (active) setIsReady(true);
         return;
       }
@@ -203,6 +285,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
       try {
         const existing = await getCreatorStory(storyId);
         if (!active) return;
+        savedDraftSnapshotRef.current = createDraftSnapshot(existing);
         setStories([existing]);
         setTitle(existing.title);
         setSynopsis(existing.synopsis);
@@ -334,6 +417,11 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
 
     if (isSaving) return;
 
+    if (nextStatus === "In review" && isChapterEditorDirty) {
+      setError("Finish or cancel the open chapter edit before submitting the story for review.");
+      return;
+    }
+
     if (nextStatus === "In review") {
       if (!title.trim() || !synopsis.trim() || !genre) {
         setError("Add a title, synopsis and genre before submitting for review.");
@@ -352,6 +440,10 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
         return;
       }
     }
+
+    const editorSnapshotAtSaveStart = currentEditorSnapshot;
+    const hasOpenChapterEditsAtSaveStart = isChapterEditorDirty;
+    const localChapterIdsAtSaveStart = chapters.map((chapter) => chapter.id);
 
     setIsSaving(true);
     try {
@@ -376,24 +468,49 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
       // Keep the database ID immediately so a failed submit can be retried
       // without accidentally creating a second story.
       setSavedStoryId(saved.id);
-      setChapters(saved.chapters);
+      savedDraftSnapshotRef.current = createDraftSnapshot(saved);
+
+      // Preserve edits made while the request was in flight, while attaching
+      // the server IDs returned for the chapters that were actually saved.
+      setChapters((current) => current.map((chapter) => {
+        const savedIndex = localChapterIdsAtSaveStart.indexOf(chapter.id);
+        const serverChapterId = savedIndex >= 0
+          ? saved.chapters[savedIndex]?.serverChapterId
+          : undefined;
+        return serverChapterId ? { ...chapter, serverChapterId } : chapter;
+      }));
+
       setStories((current) => [
         saved,
         ...current.filter((story) => story.id !== saved.id),
       ]);
-      if (!storyId) router.replace("/creator/" + saved.id);
 
-      const result = nextStatus === "In review"
-        ? await submitCreatorStory(saved.id)
-        : saved;
+      const editorChangedWhileSaving =
+        currentEditorSnapshotRef.current !== editorSnapshotAtSaveStart;
+      const chapterEditsRemain = hasOpenChapterEditsAtSaveStart || editorChangedWhileSaving;
 
-      setStories((current) => [
-        result,
-        ...current.filter((story) => story.id !== result.id),
-      ]);
+      if (!storyId && !chapterEditsRemain) {
+        router.replace("/creator/" + saved.id);
+      }
+
+      if (nextStatus === "In review") {
+        if (editorChangedWhileSaving) {
+          setNotice("Your draft was saved, but new edits were made while it was saving. Save those changes before submitting.");
+          return;
+        }
+
+        const result = await submitCreatorStory(saved.id);
+        setStories((current) => [
+          result,
+          ...current.filter((story) => story.id !== result.id),
+        ]);
+        setNotice("Your story has been submitted. It is now saved in the moderator review queue.");
+        return;
+      }
+
       setNotice(
-        nextStatus === "In review"
-          ? "Your story has been submitted. It is now saved in the moderator review queue."
+        chapterEditsRemain
+          ? "Draft saved. Your open chapter edits or newer changes are still unsaved."
           : "Draft saved to your StoryWorld account.",
       );
     } catch (saveError) {
@@ -422,10 +539,25 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
         <div className="creator-breadcrumb"><Link href="/creator"><ArrowLeft size={14} /> Creator Studio</Link><span>/</span><span>{storyId ? "Edit story" : "New story"}</span></div>
         <div className="creator-editor-heading">
           <div><span className="eyebrow">STORY BUILDER</span><h1>{storyId ? "Continue your story" : "Create a new story"}</h1><p>Start with the details, then add chapters or episodes to build your reader experience.</p></div>
-          <span className="creator-draft-badge"><FileText size={13} /> {existingStory?.reviewStatus ?? "New draft"}</span>
+          <div className={editorStatusStyles.headingStatus}>
+            <span className="creator-draft-badge"><FileText size={13} /> {existingStory?.reviewStatus ?? "New draft"}</span>
+            {savedDraftSnapshotRef.current !== null && (
+              <span
+                className={[
+                  editorStatusStyles.saveState,
+                  hasUnsavedChanges ? editorStatusStyles.unsaved : editorStatusStyles.saved,
+                ].join(" ")}
+                role="status"
+                aria-live="polite"
+              >
+                {hasUnsavedChanges ? <AlertCircle size={13} /> : <CheckCircle2 size={13} />}
+                {hasUnsavedChanges ? "Unsaved changes" : "All changes saved"}
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="creator-editor-grid">
+        <div className="creator-editor-grid" aria-busy={isSaving}>
           <div className="creator-editor-main">
             <section className="creator-form-card">
               <div className="creator-form-heading"><span>01</span><div><h2>Story details</h2><p>Give readers a reason to open your story.</p></div></div>
