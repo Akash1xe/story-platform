@@ -6,6 +6,8 @@ export type CreatorChapter = {
   title: string;
   body: string;
   panelUrls: string[];
+  panelAltTexts: string[];
+  panelCaptions: string[];
   updatedAt: number;
 };
 
