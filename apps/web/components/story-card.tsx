@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useReaderLibrary } from "@/hooks/use-reader-library";
-import { ArrowUpRight, Bookmark, Clock3 } from "lucide-react";
+import { ArrowUpRight, Bookmark, Clock3, Star } from "lucide-react";
 import type { Story } from "@/lib/demo-content";
 
 type StoryCardProps = { story: Story };
@@ -28,7 +28,21 @@ export default function StoryCard({ story }: StoryCardProps) {
           ? <Link className="story-creator" href={`/creators/${story.creatorId}`}>by {story.creator}</Link>
           : <span className="story-creator">by {story.creator}</span>}
         <p>{story.description}</p>
-        <div className="story-meta"><span><Clock3 size={13} />{story.minutes} min read</span><span>{story.type}</span></div>
+        <div className="story-meta">
+          <span><Clock3 size={13} />{story.minutes} min read</span>
+          {story.averageRating != null && (story.ratingCount ?? 0) > 0 && (
+            <span
+              className="story-rating-meta"
+              aria-label={story.averageRating.toFixed(1) + " out of 5 from " + story.ratingCount + " ratings"}
+              title={story.averageRating.toFixed(1) + " out of 5 · " + story.ratingCount + " ratings"}
+            >
+              <Star size={12} fill="currentColor" aria-hidden="true" />
+              <strong>{story.averageRating.toFixed(1)}</strong>
+              <small>({story.ratingCount})</small>
+            </span>
+          )}
+          <span>{story.type}</span>
+        </div>
         <Link className="story-detail-link" href={`/stories/${story.id}`}>View story <ArrowUpRight size={13} aria-hidden="true" /></Link>
         {error && <small role="alert" className="library-inline-error">{error}</small>}
       </div>

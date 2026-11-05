@@ -13,6 +13,10 @@ export type PublicStorySummary = {
   genres: Array<{ genre: { name: string; slug: string } }>;
   chapters: Array<{ id: string; number: number; title: string }>;
   _count?: { chapters: number };
+  ratingSummary?: {
+    averageRating: number | null;
+    ratingCount: number;
+  };
 };
 
 export type PublicStoryDetail = PublicStorySummary & {
@@ -135,6 +139,8 @@ export function toCatalogStory(story: PublicStorySummary): Story {
     coverImage: story.coverImageUrl ?? "",
     description: story.synopsis,
     status: story.publicationStatus === "COMPLETED" ? "Completed" : "Ongoing",
+    averageRating: story.ratingSummary?.averageRating ?? null,
+    ratingCount: story.ratingSummary?.ratingCount ?? 0,
     previewTitle: story.chapters[0]?.title ?? "First chapter",
     previewParagraphs: [],
   };

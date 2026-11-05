@@ -606,6 +606,25 @@ input:focus-visible {
   gap: 5px;
 }
 
+.story-rating-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #c4a5ff;
+  white-space: nowrap;
+}
+
+.story-rating-meta strong {
+  color: #e7ddfb;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.story-rating-meta small {
+  color: #8d92a1;
+  font-size: 8px;
+}
+
 .genre-section {
   padding: 32px;
   border: 1px solid var(--border);
