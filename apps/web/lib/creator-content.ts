@@ -4,8 +4,11 @@ export type CreatorReviewStatus = "Draft" | "In review" | "Approved" | "Changes 
 export type CreatorChapter = {
   id: string;
   title: string;
+  summary: string;
   body: string;
   panelUrls: string[];
+  panelAltTexts: string[];
+  panelCaptions: string[];
   updatedAt: number;
 };
 

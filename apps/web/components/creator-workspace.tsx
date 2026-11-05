@@ -175,8 +175,11 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
   const [coverImage, setCoverImage] = useState("");
   const [chapters, setChapters] = useState<CreatorChapter[]>([]);
   const [chapterTitle, setChapterTitle] = useState("");
+  const [chapterSummary, setChapterSummary] = useState("");
   const [chapterBody, setChapterBody] = useState("");
   const [panelUrlsText, setPanelUrlsText] = useState("");
+  const [panelAltTextsText, setPanelAltTextsText] = useState("");
+  const [panelCaptionsText, setPanelCaptionsText] = useState("");
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [notice, setNotice] = useState("");
@@ -228,8 +231,11 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
 
   function resetChapterForm() {
     setChapterTitle("");
+    setChapterSummary("");
     setChapterBody("");
     setPanelUrlsText("");
+    setPanelAltTextsText("");
+    setPanelCaptionsText("");
     setEditingChapterId(null);
     setPreviewOpen(false);
   }
@@ -244,7 +250,14 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
       setError("Add some chapter text before saving it.");
       return;
     }
-    const panelUrls = panelUrlsText.split(/\r?\n/).map((url) => url.trim()).filter(Boolean);
+    const altTextLines = panelAltTextsText.split(/\r?\n/);
+    const captionLines = panelCaptionsText.split(/\r?\n/);
+    const panels = panelUrlsText.split(/\r?\n/).map((url, index) => ({
+      url: url.trim(),
+      altText: altTextLines[index]?.trim() ?? "",
+      caption: captionLines[index]?.trim() ?? "",
+    })).filter((panel) => panel.url.length > 0);
+    const panelUrls = panels.map((panel) => panel.url);
     if (format === "Comic" && panelUrls.length === 0) {
       setError("Add at least one panel image URL for this comic episode.");
       return;
@@ -253,13 +266,20 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
       setError("Panel images must use public HTTP or HTTPS URLs.");
       return;
     }
+    if (format === "Comic" && panels.some((panel) => panel.altText.length > 500 || panel.caption.length > 500)) {
+      setError("Panel alt text and captions must each be 500 characters or fewer.");
+      return;
+    }
 
     const timestamp = Date.now();
     const chapter: CreatorChapter = {
       id: editingChapterId ?? makeId(),
       title: chapterTitle.trim(),
+      summary: chapterSummary.trim(),
       body: chapterBody.trim(),
       panelUrls,
+      panelAltTexts: panels.map((panel) => panel.altText),
+      panelCaptions: panels.map((panel) => panel.caption),
       updatedAt: timestamp
     };
     setChapters((current) => {
@@ -273,8 +293,11 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
   function editChapter(chapter: CreatorChapter) {
     setEditingChapterId(chapter.id);
     setChapterTitle(chapter.title);
+    setChapterSummary(chapter.summary ?? "");
     setChapterBody(chapter.body);
     setPanelUrlsText(chapter.panelUrls.join("\n"));
+    setPanelAltTextsText((chapter.panelAltTexts ?? []).join("\n"));
+    setPanelCaptionsText((chapter.panelCaptions ?? []).join("\n"));
     setPreviewOpen(false);
     setError("");
   }
@@ -320,8 +343,11 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
         coverImage: coverImage.trim(),
         chapters: chapters.map((chapter) => ({
           title: chapter.title,
+          summary: chapter.summary ?? "",
           body: chapter.body,
           panelUrls: chapter.panelUrls,
+          panelAltTexts: chapter.panelAltTexts ?? [],
+          panelCaptions: chapter.panelCaptions ?? [],
         })),
       });
 
@@ -409,8 +435,13 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
               <div className="creator-chapter-editor">
                 <div className="creator-subheading"><h3>{editingChapterId ? "Edit chapter" : "Add a chapter"}</h3><span>{format}</span></div>
                 <label className="creator-field"><span>Chapter / episode title <b>*</b></span><input value={chapterTitle} onChange={(event) => setChapterTitle(event.target.value)} placeholder="e.g. Chapter 1 — The Beginning" maxLength={100} /></label>
+                <label className="creator-field"><span>Chapter summary <small>(optional)</small></span><textarea value={chapterSummary} onChange={(event) => setChapterSummary(event.target.value)} maxLength={300} rows={3} placeholder="A short, spoiler-free preview of this chapter..." /><small>{chapterSummary.length}/300 characters. Shown in the public chapter list.</small></label>
                 {format === "Comic" ? (
-                  <label className="creator-field"><span>Panel image URLs <b>*</b></span><textarea value={panelUrlsText} onChange={(event) => setPanelUrlsText(event.target.value)} rows={5} placeholder={"https://example.com/panel-01.jpg\nhttps://example.com/panel-02.jpg"} /><small>One public image URL per line. Panels appear in the order listed.</small></label>
+                  <>
+                    <label className="creator-field"><span>Panel image URLs <b>*</b></span><textarea value={panelUrlsText} onChange={(event) => setPanelUrlsText(event.target.value)} rows={5} placeholder={"https://example.com/panel-01.jpg\nhttps://example.com/panel-02.jpg"} /><small>One public image URL per line. Panels appear in the order listed.</small></label>
+                    <label className="creator-field"><span>Panel alt text <small>(optional)</small></span><textarea value={panelAltTextsText} onChange={(event) => setPanelAltTextsText(event.target.value)} rows={4} placeholder={"A wide shot of the city at night.\nThe main character opens the door."} /><small>One description per panel, in the same order as the image URLs. Leave a line empty for a decorative panel.</small></label>
+                    <label className="creator-field"><span>Panel captions <small>(optional)</small></span><textarea value={panelCaptionsText} onChange={(event) => setPanelCaptionsText(event.target.value)} rows={3} placeholder={"The city never sleeps.\nA sound breaks the silence."} /><small>One caption per panel, in the same order as the image URLs.</small></label>
+                  </>
                 ) : (
                   <label className="creator-field"><span>Chapter text <b>*</b></span><textarea className="creator-writing-area" value={chapterBody} onChange={(event) => setChapterBody(event.target.value)} rows={10} placeholder="Write your chapter here..." /><small>{chapterBody.trim() ? chapterBody.trim().split(/\s+/).length : 0} words</small></label>
                 )}
@@ -423,8 +454,9 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
                   <div className="creator-live-preview">
                     <span className="eyebrow">LIVE PREVIEW</span>
                     <h3>{chapterTitle || chapterPreview?.title || "Untitled chapter"}</h3>
+                    {chapterSummary.trim() && <p className="creator-preview-summary">{chapterSummary}</p>}
                     {format === "Comic" ? (
-                      <div className="creator-preview-panels">{panelUrlsText.split(/\r?\n/).map((url) => url.trim()).filter(Boolean).map((url, index) => <div key={url + index}><img src={url} alt={"Comic panel " + (index + 1)} /><span>Panel {index + 1}</span></div>)}</div>
+                      <div className="creator-preview-panels">{panelUrlsText.split(/\r?\n/).map((url, lineIndex) => ({ url: url.trim(), altText: panelAltTextsText.split(/\r?\n/)[lineIndex]?.trim() ?? "", caption: panelCaptionsText.split(/\r?\n/)[lineIndex]?.trim() ?? "" })).filter((panel) => panel.url).map((panel, index) => <div key={panel.url + index}><img src={panel.url} alt={panel.altText || (panel.caption ? "" : "Comic panel " + (index + 1))} />{panel.caption && <p>{panel.caption}</p>}<span>Panel {index + 1}</span></div>)}</div>
                     ) : <p>{chapterBody || "Your chapter text will appear here as you write."}</p>}
                   </div>
                 )}

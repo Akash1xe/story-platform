@@ -9,12 +9,15 @@ type ApiPanel = {
   id: string;
   position: number;
   imageUrl: string;
+  altText: string | null;
+  caption: string | null;
 };
 
 type ApiChapter = {
   id: string;
   number: number;
   title: string;
+  summary: string | null;
   body: string | null;
   updatedAt: string;
   panels: ApiPanel[];
@@ -91,7 +94,7 @@ export type StoryDraftInput = {
   format: CreatorFormat;
   publicationStatus: "Ongoing" | "Completed";
   coverImage: string;
-  chapters: Array<Pick<CreatorChapter, "title" | "body" | "panelUrls">>;
+  chapters: Array<Pick<CreatorChapter, "title" | "summary" | "body" | "panelUrls" | "panelAltTexts" | "panelCaptions">>;
 };
 
 const STORIES_ENDPOINT = "/api/v1/creator/stories";
@@ -128,16 +131,19 @@ export function fromApiStory(story: ApiStory): CreatorStory {
     reviewStatus: toReviewStatus(story),
     reviewNote: story.moderationReviews[0]?.note ?? "",
     authorName: story.author?.displayName,
-    chapters: story.chapters.map((chapter) => ({
-      id: chapter.id,
-      title: chapter.title,
-      body: chapter.body ?? "",
-      panelUrls: chapter.panels
-        .slice()
-        .sort((left, right) => left.position - right.position)
-        .map((panel) => panel.imageUrl),
-      updatedAt: toTimestamp(chapter.updatedAt),
-    })),
+    chapters: story.chapters.map((chapter) => {
+      const panels = chapter.panels.slice().sort((left, right) => left.position - right.position);
+      return {
+        id: chapter.id,
+        title: chapter.title,
+        summary: chapter.summary ?? "",
+        body: chapter.body ?? "",
+        panelUrls: panels.map((panel) => panel.imageUrl),
+        panelAltTexts: panels.map((panel) => panel.altText ?? ""),
+        panelCaptions: panels.map((panel) => panel.caption ?? ""),
+        updatedAt: toTimestamp(chapter.updatedAt),
+      };
+    }),
     createdAt: toTimestamp(story.createdAt),
     updatedAt: toTimestamp(story.updatedAt),
   };

@@ -4,6 +4,7 @@ import { ArrowRight, BookOpen, Bookmark, Clock3, Compass, LibraryBig } from "luc
 import StoryCard from "@/components/story-card";
 import NotificationBell from "@/components/notification-bell";
 import { useReaderLibrary } from "@/hooks/use-reader-library";
+import ReadingListsPanel from "@/components/reading-lists-panel";
 
 function formatLastRead(timestamp: number): string {
   if (!timestamp) return "Reading activity saved";
@@ -25,6 +26,7 @@ export default function LibraryPage() {
         ) : (
           <>
             {error && <p className="library-inline-error" role="alert">{error}</p>}
+            <ReadingListsPanel />
             <section className="library-section">
               <div className="library-section-heading"><div><span className="eyebrow">PICK UP WHERE YOU LEFT OFF</span><h2>Continue reading</h2></div><span className="library-count">{library.continueReading.length} {library.continueReading.length === 1 ? "story" : "stories"}</span></div>
               {library.continueReading.length ? (

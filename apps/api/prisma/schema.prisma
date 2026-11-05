@@ -83,6 +83,7 @@ model User {
   accounts          Account[]
   stories           Story[]            @relation("StoryAuthor")
   libraryEntries    LibraryEntry[]
+  readingLists      ReadingList[]
   storyRatings      StoryRating[]
   readingProgress   ReadingProgress[]
   moderationReviews ModerationReview[] @relation("ReviewAuthor")
@@ -169,6 +170,7 @@ model Story {
   chapters          Chapter[]
   genres            StoryGenre[]
   libraryEntries    LibraryEntry[]
+  readingListEntries ReadingListEntry[]
   storyRatings      StoryRating[]
   readingProgress   ReadingProgress[]
   moderationReviews ModerationReview[]
@@ -240,6 +242,32 @@ model LibraryEntry {
 
   @@unique([userId, storyId])
   @@index([userId, savedAt])
+}
+
+model ReadingList {
+  id          String             @id @default(cuid())
+  userId      String
+  name        String             @db.VarChar(40)
+  description String?            @db.VarChar(160)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries     ReadingListEntry[]
+
+  @@unique([userId, name])
+  @@index([userId, updatedAt])
+}
+
+model ReadingListEntry {
+  id      String      @id @default(cuid())
+  listId  String
+  storyId String
+  addedAt DateTime    @default(now())
+  list    ReadingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  story   Story       @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, storyId])
+  @@index([storyId])
 }
 
 model StoryRating {
