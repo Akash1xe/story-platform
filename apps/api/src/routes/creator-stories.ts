@@ -17,6 +17,7 @@ const panelSchema = z.string().url().max(2_048).refine(
 
 const chapterSchema = z.object({
   title: z.string().trim().min(1).max(120),
+  summary: z.string().trim().max(300).default(""),
   body: z.string().max(500_000).default(""),
   panelUrls: z.array(panelSchema).max(100).default([]),
   panelAltTexts: z.array(z.string().trim().max(500)).max(100).default([]),
@@ -139,6 +140,7 @@ async function syncChapters(
     }));
     const chapterData = {
       title: chapter.title,
+      summary: chapter.summary || null,
       body: story.format === "Comic" ? null : chapter.body,
     };
 

@@ -175,6 +175,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
   const [coverImage, setCoverImage] = useState("");
   const [chapters, setChapters] = useState<CreatorChapter[]>([]);
   const [chapterTitle, setChapterTitle] = useState("");
+  const [chapterSummary, setChapterSummary] = useState("");
   const [chapterBody, setChapterBody] = useState("");
   const [panelUrlsText, setPanelUrlsText] = useState("");
   const [panelAltTextsText, setPanelAltTextsText] = useState("");
@@ -230,6 +231,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
 
   function resetChapterForm() {
     setChapterTitle("");
+    setChapterSummary("");
     setChapterBody("");
     setPanelUrlsText("");
     setPanelAltTextsText("");
@@ -273,6 +275,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
     const chapter: CreatorChapter = {
       id: editingChapterId ?? makeId(),
       title: chapterTitle.trim(),
+      summary: chapterSummary.trim(),
       body: chapterBody.trim(),
       panelUrls,
       panelAltTexts: panels.map((panel) => panel.altText),
@@ -290,6 +293,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
   function editChapter(chapter: CreatorChapter) {
     setEditingChapterId(chapter.id);
     setChapterTitle(chapter.title);
+    setChapterSummary(chapter.summary ?? "");
     setChapterBody(chapter.body);
     setPanelUrlsText(chapter.panelUrls.join("\n"));
     setPanelAltTextsText((chapter.panelAltTexts ?? []).join("\n"));
@@ -339,6 +343,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
         coverImage: coverImage.trim(),
         chapters: chapters.map((chapter) => ({
           title: chapter.title,
+          summary: chapter.summary ?? "",
           body: chapter.body,
           panelUrls: chapter.panelUrls,
           panelAltTexts: chapter.panelAltTexts ?? [],
@@ -430,6 +435,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
               <div className="creator-chapter-editor">
                 <div className="creator-subheading"><h3>{editingChapterId ? "Edit chapter" : "Add a chapter"}</h3><span>{format}</span></div>
                 <label className="creator-field"><span>Chapter / episode title <b>*</b></span><input value={chapterTitle} onChange={(event) => setChapterTitle(event.target.value)} placeholder="e.g. Chapter 1 — The Beginning" maxLength={100} /></label>
+                <label className="creator-field"><span>Chapter summary <small>(optional)</small></span><textarea value={chapterSummary} onChange={(event) => setChapterSummary(event.target.value)} maxLength={300} rows={3} placeholder="A short, spoiler-free preview of this chapter..." /><small>{chapterSummary.length}/300 characters. Shown in the public chapter list.</small></label>
                 {format === "Comic" ? (
                   <>
                     <label className="creator-field"><span>Panel image URLs <b>*</b></span><textarea value={panelUrlsText} onChange={(event) => setPanelUrlsText(event.target.value)} rows={5} placeholder={"https://example.com/panel-01.jpg\nhttps://example.com/panel-02.jpg"} /><small>One public image URL per line. Panels appear in the order listed.</small></label>
@@ -448,6 +454,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
                   <div className="creator-live-preview">
                     <span className="eyebrow">LIVE PREVIEW</span>
                     <h3>{chapterTitle || chapterPreview?.title || "Untitled chapter"}</h3>
+                    {chapterSummary.trim() && <p className="creator-preview-summary">{chapterSummary}</p>}
                     {format === "Comic" ? (
                       <div className="creator-preview-panels">{panelUrlsText.split(/\r?\n/).map((url, lineIndex) => ({ url: url.trim(), altText: panelAltTextsText.split(/\r?\n/)[lineIndex]?.trim() ?? "", caption: panelCaptionsText.split(/\r?\n/)[lineIndex]?.trim() ?? "" })).filter((panel) => panel.url).map((panel, index) => <div key={panel.url + index}><img src={panel.url} alt={panel.altText || (panel.caption ? "" : "Comic panel " + (index + 1))} />{panel.caption && <p>{panel.caption}</p>}<span>Panel {index + 1}</span></div>)}</div>
                     ) : <p>{chapterBody || "Your chapter text will appear here as you write."}</p>}
