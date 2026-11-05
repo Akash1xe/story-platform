@@ -86,7 +86,10 @@ Better Auth is mounted at `/api/auth/*` and provides email/password sign-up, sig
 - `GET /api/v1/reading-progress/:chapterId` loads the saved position for a chapter.
 - `GET /api/v1/creators/:creatorId` returns a public creator profile and their published stories; the path accepts the creator ID or their custom handle.
 - `GET /api/v1/following` lists creators followed by the signed-in reader.
-- `GET /api/v1/following/:creatorId` checks follow status.\n- `POST /api/v1/following/:creatorId` follows a creator with published work.\n- `DELETE /api/v1/following/:creatorId` unfollows a creator.\n- `GET /api/v1/creator/profile` loads the signed-in creator’s profile settings.
+- `GET /api/v1/following/:creatorId` checks follow status.
+- `POST /api/v1/following/:creatorId` follows a creator with published work.
+- `DELETE /api/v1/following/:creatorId` unfollows a creator.
+- `GET /api/v1/creator/profile` loads the signed-in creator’s profile settings.
 - `PUT /api/v1/creator/profile` updates the signed-in creator’s public name, avatar URL, unique handle, biography and website URL.
 - `PUT /api/v1/reading-progress/:chapterId` upserts progress for a published chapter (ratio from 0 to 1).
 
