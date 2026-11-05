@@ -215,8 +215,14 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
   const [error, setError] = useState("");
   const [loadError, setLoadError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [autoSaveError, setAutoSaveError] = useState("");
   const [savedStoryId, setSavedStoryId] = useState(storyId ?? "");
   const savedDraftSnapshotRef = useRef<string | null>(null);
+  const isSavingRef = useRef(false);
+  const lastAutoSaveAttemptRef = useRef<string | null>(null);
+  const persistStoryRef = useRef<
+    (nextStatus: CreatorReviewStatus, automatic?: boolean) => Promise<void>
+  >(async () => {});
 
   const draftSnapshot = createDraftSnapshot({
     title,
@@ -257,6 +263,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
     panelCaptionsText,
   });
   const currentEditorSnapshotRef = useRef(currentEditorSnapshot);
+  const lastObservedDraftSnapshotRef = useRef(draftSnapshot);
   currentEditorSnapshotRef.current = currentEditorSnapshot;
   const hasUnsavedChanges = savedDraftSnapshotRef.current !== null && (
     draftSnapshot !== savedDraftSnapshotRef.current || isChapterEditorDirty
@@ -411,11 +418,14 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
     setNotice("Chapter order changed. Save the draft to apply the new reading order.");
   }
 
-  async function persistStory(nextStatus: CreatorReviewStatus) {
-    setError("");
-    setNotice("");
+  async function persistStory(nextStatus: CreatorReviewStatus, automatic = false) {
+    if (!automatic) {
+      setError("");
+      setNotice("");
+      setAutoSaveError("");
+    }
 
-    if (isSaving) return;
+    if (isSavingRef.current || (automatic && isChapterEditorDirty)) return;
 
     if (nextStatus === "In review" && isChapterEditorDirty) {
       setError("Finish or cancel the open chapter edit before submitting the story for review.");
@@ -445,6 +455,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
     const hasOpenChapterEditsAtSaveStart = isChapterEditorDirty;
     const localChapterIdsAtSaveStart = chapters.map((chapter) => chapter.id);
 
+    isSavingRef.current = true;
     setIsSaving(true);
     try {
       const saved = await saveCreatorStory(savedStoryId || undefined, {
@@ -469,6 +480,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
       // without accidentally creating a second story.
       setSavedStoryId(saved.id);
       savedDraftSnapshotRef.current = createDraftSnapshot(saved);
+      setAutoSaveError("");
 
       // Preserve edits made while the request was in flight, while attaching
       // the server IDs returned for the chapters that were actually saved.
@@ -508,17 +520,64 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
         return;
       }
 
-      setNotice(
-        chapterEditsRemain
-          ? "Draft saved. Your open chapter edits or newer changes are still unsaved."
-          : "Draft saved to your StoryWorld account.",
-      );
+      if (!automatic) {
+        setNotice(
+          chapterEditsRemain
+            ? "Draft saved. Your open chapter edits or newer changes are still unsaved."
+            : "Draft saved to your StoryWorld account.",
+        );
+      }
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "The story could not be saved.");
+      const message = saveError instanceof Error
+        ? saveError.message
+        : "The story could not be saved.";
+
+      if (automatic) setAutoSaveError(message);
+      else setError(message);
     } finally {
+      isSavingRef.current = false;
       setIsSaving(false);
     }
   }
+
+  persistStoryRef.current = persistStory;
+
+  const hasPersistableDraftChanges =
+    savedDraftSnapshotRef.current !== null &&
+    draftSnapshot !== savedDraftSnapshotRef.current;
+
+  useEffect(() => {
+    if (lastObservedDraftSnapshotRef.current !== draftSnapshot) {
+      lastObservedDraftSnapshotRef.current = draftSnapshot;
+      lastAutoSaveAttemptRef.current = null;
+    }
+
+    if (
+      !isReady ||
+      !hasPersistableDraftChanges ||
+      isSaving ||
+      isChapterEditorDirty
+    ) {
+      return;
+    }
+
+    if (lastAutoSaveAttemptRef.current === draftSnapshot) return;
+
+    const snapshotToSave = draftSnapshot;
+    const timeoutId = window.setTimeout(() => {
+      lastAutoSaveAttemptRef.current = snapshotToSave;
+      setAutoSaveError("");
+      void persistStoryRef.current("Draft", true);
+    }, 1_200);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    draftSnapshot,
+    hasPersistableDraftChanges,
+    isChapterEditorDirty,
+    isReady,
+    isSaving,
+  ]);
 
   if (!isReady) {
     return <><CreatorHeader active="studio" /><main className="creator-shell"><div className="creator-empty">Loading editor…</div></main></>;
@@ -538,20 +597,32 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
       <main className="creator-shell creator-editor-shell">
         <div className="creator-breadcrumb"><Link href="/creator"><ArrowLeft size={14} /> Creator Studio</Link><span>/</span><span>{storyId ? "Edit story" : "New story"}</span></div>
         <div className="creator-editor-heading">
-          <div><span className="eyebrow">STORY BUILDER</span><h1>{storyId ? "Continue your story" : "Create a new story"}</h1><p>Start with the details, then add chapters or episodes to build your reader experience.</p></div>
+          <div><span className="eyebrow">STORY BUILDER</span><h1>{storyId ? "Continue your story" : "Create a new story"}</h1><p>Changes save automatically after a short pause. Add or update a chapter to include it in your draft.</p></div>
           <div className={editorStatusStyles.headingStatus}>
             <span className="creator-draft-badge"><FileText size={13} /> {existingStory?.reviewStatus ?? "New draft"}</span>
             {savedDraftSnapshotRef.current !== null && (
               <span
                 className={[
                   editorStatusStyles.saveState,
-                  hasUnsavedChanges ? editorStatusStyles.unsaved : editorStatusStyles.saved,
+                  hasUnsavedChanges || autoSaveError
+                    ? editorStatusStyles.unsaved
+                    : editorStatusStyles.saved,
                 ].join(" ")}
                 role="status"
                 aria-live="polite"
               >
-                {hasUnsavedChanges ? <AlertCircle size={13} /> : <CheckCircle2 size={13} />}
-                {hasUnsavedChanges ? "Unsaved changes" : "All changes saved"}
+                {hasUnsavedChanges || autoSaveError
+                  ? <AlertCircle size={13} />
+                  : <CheckCircle2 size={13} />}
+                {isSaving
+                  ? "Saving…"
+                  : autoSaveError
+                    ? "Autosave failed"
+                    : isChapterEditorDirty
+                      ? "Chapter edit not saved"
+                      : hasUnsavedChanges
+                        ? "Autosave pending"
+                        : "All changes saved"}
               </span>
             )}
           </div>
@@ -641,6 +712,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
             </div>
             {notice && <div className="creator-feedback creator-feedback--success" role="status"><CheckCircle2 size={15} />{notice}</div>}
             {error && <div className="creator-feedback creator-feedback--error" role="alert"><AlertCircle size={15} />{error}</div>}
+            {autoSaveError && <div className="creator-feedback creator-feedback--error" role="alert"><AlertCircle size={15} />Autosave failed: {autoSaveError} You can retry with Save draft.</div>}
           </aside>
         </div>
       </main>
