@@ -3102,3 +3102,10 @@ input:focus-visible {
   .reading-list-edit-fields { grid-template-columns: 1fr; }
   .reading-list-edit-form { width: 100%; }
 }
+
+
+/* Chapter reorder controls */
+.creator-chapter-order-button:disabled {
+  cursor: not-allowed;
+  opacity: .35;
+}

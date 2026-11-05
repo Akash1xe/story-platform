@@ -199,6 +199,12 @@ router.post("/", async (request, response, next) => {
   try {
     const input = parseStoryInput(request, response);
     if (!input) return;
+    if (input.chapters.some((chapter) => chapter.chapterId)) {
+      response.status(400).json({
+        error: { code: "INVALID_CHAPTER_REFERENCE", message: "New stories cannot reference existing chapter IDs." },
+      });
+      return;
+    }
 
     const session = getSession(response);
     const slug = `${slugify(input.title)}-${randomUUID().slice(0, 8)}`;
@@ -413,6 +419,27 @@ router.put("/:storyId", async (request, response, next) => {
           code: "STORY_LOCKED",
           message: "Only draft stories can be edited. A submitted or published story cannot be changed here.",
         },
+      });
+      return;
+    }
+
+    const submittedChapterIds = input.chapters.flatMap((chapter) =>
+      chapter.chapterId ? [chapter.chapterId] : [],
+    );
+    if (new Set(submittedChapterIds).size !== submittedChapterIds.length) {
+      response.status(400).json({
+        error: { code: "DUPLICATE_CHAPTER_REFERENCE", message: "A chapter can appear only once in the story order." },
+      });
+      return;
+    }
+    const existingChapters = await prisma.chapter.findMany({
+      where: { storyId: current.id },
+      select: { id: true },
+    });
+    const existingChapterIds = new Set(existingChapters.map((chapter) => chapter.id));
+    if (submittedChapterIds.some((chapterId) => !existingChapterIds.has(chapterId))) {
+      response.status(400).json({
+        error: { code: "INVALID_CHAPTER_REFERENCE", message: "One or more chapter IDs do not belong to this story." },
       });
       return;
     }
