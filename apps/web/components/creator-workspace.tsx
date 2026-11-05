@@ -54,12 +54,12 @@ type DraftSnapshotInput = Pick<
 
 function createDraftSnapshot(story: DraftSnapshotInput): string {
   return JSON.stringify({
-    title: story.title,
-    synopsis: story.synopsis,
+    title: story.title.trim(),
+    synopsis: story.synopsis.trim(),
     genre: story.genre,
     format: story.format,
     publicationStatus: story.publicationStatus,
-    coverImage: story.coverImage,
+    coverImage: story.coverImage.trim(),
     chapters: story.chapters.map((chapter) => ({
       title: chapter.title,
       summary: chapter.summary ?? "",
