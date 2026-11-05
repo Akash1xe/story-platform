@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, BookOpen, Minus, Plus, Sun } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import type { PublicStoryPageData } from "@/lib/public-stories";
+import ChapterComments from "@/components/chapter-comments";
 
 type PublicStoryReaderProps = { data: PublicStoryPageData };
 export default function PublicStoryReader({ data }: PublicStoryReaderProps) {
@@ -85,6 +86,7 @@ export default function PublicStoryReader({ data }: PublicStoryReaderProps) {
           <article className={`reader-prose reader-prose--scale-${fontScale}`} aria-label="Chapter text">{(chapter.body ?? "").split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => <p className={index === 0 ? "reader-prose-opening" : ""} key={index}>{paragraph}</p>)}</article>
         )}
         <nav className="public-reader-footer" aria-label="Chapter navigation"><Link href={`/stories/${story.slug}`}>Back to all chapters <ArrowLeft size={15} /></Link></nav>
+        <ChapterComments slug={story.slug} chapterNumber={chapter.number} />
       </main>
     </div>
   );

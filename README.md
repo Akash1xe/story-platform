@@ -45,9 +45,10 @@ pnpm --filter @story-platform/api db:generate
 pnpm --filter @story-platform/api exec prisma db push
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105000000_add_creator_follows
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105010000_add_creator_profile_fields
+pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105020000_add_chapter_comments
 ```
 
-The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the two `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
+The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the three `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
 
 Start the API:
 
@@ -92,6 +93,9 @@ Better Auth is mounted at `/api/auth/*` and provides email/password sign-up, sig
 - `GET /api/v1/creator/profile` loads the signed-in creator’s profile settings.
 - `PUT /api/v1/creator/profile` updates the signed-in creator’s public name, avatar URL, unique handle, biography and website URL.
 - `PUT /api/v1/reading-progress/:chapterId` upserts progress for a published chapter (ratio from 0 to 1).
+- `GET /api/v1/stories/:slug/chapters/:chapterNumber/comments` lists public chapter comments (20 per page by default, up to 50).
+- `POST /api/v1/stories/:slug/chapters/:chapterNumber/comments` adds a comment to a published chapter for a signed-in reader (1–1500 characters).
+- `PATCH /api/v1/chapter-comments/:commentId` edits the signed-in author’s own comment; `DELETE` removes it.
 
 New accounts receive the READER role. The role is server-owned and cannot be selected during public sign-up. Creator, moderator and admin access must be granted through a trusted administrative operation; no public role-escalation endpoint is provided.
 
@@ -103,9 +107,9 @@ Only DRAFT stories can be edited or submitted. Once submitted, the story is lock
 
 Public creator pages are available at `/creators/:creatorId`; the route accepts either the legacy creator ID or the custom handle. Creator Studio includes profile settings for the public name, avatar URL, unique handle, 500-character bio and website URL. Public pages show these fields, the account join date, follower count and published stories only. Creator email addresses and unpublished work are not included.
 
-The Prisma `User` model stores nullable creator profile fields so existing reader accounts remain valid. A fresh local database includes these fields when the initial migration is generated. Existing databases must apply a Prisma migration for the three added columns before deploying this change.
+The Prisma `User` model stores nullable creator profile fields so existing reader accounts remain valid. A fresh local database includes these fields when the initial migration is generated. Existing databases should apply pending committed migrations with `pnpm db:deploy` before deploying creator profile, follow, or chapter comment features.
 
-Creator follows, reader bookmarks and chapter progress are account-scoped in PostgreSQL. Apply the committed CreatorFollow migration with `pnpm db:deploy` before deploying. The public creator profile includes a live follower count and a follow/unfollow control for signed-in readers. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter.
+Creator follows, reader bookmarks, chapter progress and chapter comments are stored in PostgreSQL. Apply the committed CreatorFollow migration with `pnpm db:deploy` before deploying. The public creator profile includes a live follower count and a follow/unfollow control for signed-in readers. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter. Chapter comments are public to readers of published chapters; posting requires sign-in, and only the comment author can edit or delete their own comment.
 
 The existing Admin Review screen still uses its local prototype data for review decisions. The API submission is available through the moderator queue endpoint, but database-backed moderation actions and replacing the local queue UI are a follow-up milestone.
 
