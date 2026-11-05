@@ -14,7 +14,7 @@ function formatDate(value: string) {
 }
 
 function initials(name: string) {
-  return name.trim().split(/\\s+/).filter(Boolean).slice(0, 2).map(part => part[0]?.toUpperCase()).join("");
+  return name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]?.toUpperCase()).join("");
 }
 
 export default function FollowingPage() {
@@ -82,7 +82,7 @@ export default function FollowingPage() {
           <Link className={styles.discoverLink} href="/discover">Discover creators <ArrowRight size={14} /></Link>
         </div>
 
-        {error && <p className={styles.error} role="alert">{error}</p>}
+        {error && items.length > 0 && <p className={styles.error} role="alert">{error}</p>}
 
         {loading ? (
           <div className={styles.state}><LoaderCircle className={styles.spinner} size={20} /> Loading your creators…</div>
@@ -129,6 +129,8 @@ export default function FollowingPage() {
               );
             })}
           </div>
+        ) : error ? (
+          <div className={styles.state} role="alert">{error}</div>
         ) : (
           <div className={styles.empty}>
             <span><Users size={25} /></span>
