@@ -64,6 +64,7 @@ export default function HomePage({ stories, genres, catalogUnavailable = false }
             <Link href="/discover">Discover</Link>
             <Link href="#genres">Genres</Link>
             <Link href="/library">My Library</Link>
+            <Link href="/following">Following</Link>
             <Link href="/creator">Creators</Link>
           </nav>
           <div className="header-actions">

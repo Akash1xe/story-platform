@@ -14,7 +14,7 @@ export default function LibraryPage() {
     <>
       <header className="site-header"><div className="header-inner">
         <Link href="/" className="brand" aria-label="StoryWorld home"><span className="brand-icon"><BookOpen size={20} /></span><span>StoryWorld<span className="brand-period">.</span></span></Link>
-        <nav className="desktop-nav" aria-label="Main navigation"><Link href="/">Home</Link><Link href="/discover">Discover</Link><Link href="/#genres">Genres</Link><Link className="nav-active" href="/library">My Library</Link></nav>
+        <nav className="desktop-nav" aria-label="Main navigation"><Link href="/">Home</Link><Link href="/discover">Discover</Link><Link href="/#genres">Genres</Link><Link className="nav-active" href="/library">My Library</Link><Link href="/following">Following</Link></nav>
         <div className="header-actions"><Link href="/discover" className="creator-button"><Compass size={14} /> Discover stories</Link></div>
       </div></header>
       <main className="library-shell">
