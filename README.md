@@ -49,9 +49,10 @@ pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105030000_add_notifications
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105040000_add_content_reports
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105050000_add_content_moderation_actions
+pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105060000_add_story_ratings
 ```
 
-The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the six `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
+The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the seven `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
 
 Start the API:
 
@@ -83,6 +84,7 @@ Better Auth is mounted at `/api/auth/*` and provides email/password sign-up, sig
 - `GET /api/v1/creator/stories/:storyId` loads one owned story and its chapters.
 - `GET /api/v1/creator/stories/reviews` lists the signed-in creator’s moderation decisions and feedback with pagination.
 - `GET /api/v1/creator/stories/analytics` returns aggregate readership, recent active reader accounts, followers, library saves and per-story metrics.
+- `GET /api/v1/ratings/:storySlug` returns a public average and rating count; signed-in readers can load their own rating with `GET /api/v1/ratings/:storySlug/me`, update it with `PUT`, or remove it with `DELETE`.
 - `PUT /api/v1/creator/stories/:storyId` saves a draft and replaces its ordered chapter/panel content.
 - `POST /api/v1/creator/stories/:storyId/submit` validates and submits a draft for moderation.
 - `GET /api/v1/moderation/reviews` lists submissions for moderators and admins.
@@ -110,7 +112,7 @@ New accounts receive the READER role. The role is server-owned and cannot be sel
 
 Creator stories, genres, chapters and comic panel URLs are saved in PostgreSQL and scoped to the signed-in author. Drafts can be opened from another device after signing in. The API validates story/chapter fields, validates HTTP(S) panel URLs, and checks that a story has a title, synopsis, genre and at least one complete chapter before submission.
 
-Only DRAFT stories can be edited or submitted. Stories remain locked while awaiting review; when changes are requested, the story returns to DRAFT so its creator can revise and resubmit it. The Creator Studio Review history page preserves every moderator decision, reviewer and feedback note for the signed-in creator. The Analytics page reports signed-in accounts with saved reading progress, recent progress updates, library saves and followers; it does not label these account-based metrics as total page views. The UI uses image URLs for comic panels and covers; file uploads and object storage are not part of this milestone.
+Only DRAFT stories can be edited or submitted. Stories remain locked while awaiting review; when changes are requested, the story returns to DRAFT so its creator can revise and resubmit it. The Creator Studio Review history page preserves every moderator decision, reviewer and feedback note for the signed-in creator. The Analytics page reports signed-in accounts with saved reading progress, recent progress updates, library saves and followers; it does not label these account-based metrics as total page views. Published story detail pages display an average star rating and rating count; each signed-in reader may keep one 1–5 star rating per story, update it, or remove it. Creators cannot rate their own stories, and individual reader identities are not shown. The UI uses image URLs for comic panels and covers; file uploads and object storage are not part of this milestone.
 
 Public creator pages are available at `/creators/:creatorId`; the route accepts either the legacy creator ID or the custom handle. Creator Studio includes profile settings for the public name, avatar URL, unique handle, 500-character bio and website URL. Public pages show these fields, the account join date, follower count and published stories only. Creator email addresses and unpublished work are not included.
 

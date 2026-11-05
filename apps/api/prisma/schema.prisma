@@ -83,6 +83,7 @@ model User {
   accounts          Account[]
   stories           Story[]            @relation("StoryAuthor")
   libraryEntries    LibraryEntry[]
+  storyRatings      StoryRating[]
   readingProgress   ReadingProgress[]
   moderationReviews ModerationReview[] @relation("ReviewAuthor")
   followingCreators CreatorFollow[]    @relation("CreatorFollowing")
@@ -168,6 +169,7 @@ model Story {
   chapters          Chapter[]
   genres            StoryGenre[]
   libraryEntries    LibraryEntry[]
+  storyRatings      StoryRating[]
   readingProgress   ReadingProgress[]
   moderationReviews ModerationReview[]
   notifications     Notification[]
@@ -238,6 +240,21 @@ model LibraryEntry {
 
   @@unique([userId, storyId])
   @@index([userId, savedAt])
+}
+
+model StoryRating {
+  id        String   @id @default(cuid())
+  userId    String
+  storyId   String
+  value     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+  @@index([storyId, createdAt])
+  @@index([storyId, value])
 }
 
 model ReadingProgress {
