@@ -62,7 +62,7 @@ router.get("/stories/:slug/chapters/:chapterNumber/comments", async (request, re
     }
 
     const { page, limit } = pagination.data;
-    const where = { chapterId: chapter.id };
+    const where = { chapterId: chapter.id, removedAt: null };
     const [comments, total] = await prisma.$transaction([
       prisma.chapterComment.findMany({
         where,
@@ -139,6 +139,7 @@ router.patch("/chapter-comments/:commentId", requireAuthenticatedUser, async (re
       where: {
         id: parsedId.data,
         authorId,
+        removedAt: null,
         chapter: { is: { isPublished: true, story: { is: { status: "PUBLISHED" } } } },
       },
       select: { id: true },
@@ -175,6 +176,7 @@ router.delete("/chapter-comments/:commentId", requireAuthenticatedUser, async (r
       where: {
         id: parsedId.data,
         authorId: currentUserId(response),
+        removedAt: null,
         chapter: { is: { isPublished: true, story: { is: { status: "PUBLISHED" } } } },
       },
       select: { id: true },

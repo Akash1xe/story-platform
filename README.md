@@ -47,9 +47,11 @@ pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105010000_add_creator_profile_fields
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105020000_add_chapter_comments
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105030000_add_notifications
+pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105040000_add_content_reports
+pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105050000_add_content_moderation_actions
 ```
 
-The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the five `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
+The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the six `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
 
 Start the API:
 
@@ -112,9 +114,9 @@ Public creator pages are available at `/creators/:creatorId`; the route accepts 
 
 The Prisma `User` model stores nullable creator profile fields so existing reader accounts remain valid. A fresh local database includes these fields when the initial migration is generated. Existing databases should apply pending committed migrations with `pnpm db:deploy` before deploying creator profile, follow, chapter comment, notification, or content-reporting features.
 
-Creator follows, reader bookmarks, chapter progress and chapter comments are stored in PostgreSQL. Apply pending creator profile, CreatorFollow, ChapterComment, Notification, and ContentReport migrations with `pnpm db:deploy` before deploying these features. The public creator profile includes a live follower count and a follow/unfollow control for signed-in readers. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter. Chapter comments are public to readers of published chapters; posting requires sign-in, and only the comment author can edit or delete their own comment. When a moderator approves a creator submission, followers receive an in-app notification in the same database transaction; no email or push delivery is configured.
+Creator follows, reader bookmarks, chapter progress and chapter comments are stored in PostgreSQL. Apply pending creator profile, CreatorFollow, ChapterComment, Notification, ContentReport, and content moderation action migrations with `pnpm db:deploy` before deploying these features. The public creator profile includes a live follower count and a follow/unfollow control for signed-in readers. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter. Chapter comments are public to readers of published chapters; posting requires sign-in, and only the comment author can edit or delete their own comment. When a moderator approves a creator submission, followers receive an in-app notification in the same database transaction; no email or push delivery is configured.
 
-The Admin Review workspace uses the database-backed moderation API. The separate Content Reports workspace lets moderators review reader reports about published stories and chapter comments. Reports preserve a snapshot of the reported content and the reporter’s reason for review.
+The Admin Review workspace uses the database-backed moderation API. The separate Content Reports workspace lets moderators review reader reports about published stories and chapter comments. Reports preserve a snapshot of the reported content and the reporter’s reason for review. A moderator can resolve a report without removing content, dismiss it, unpublish a reported story, or remove a reported chapter comment. Story takedowns archive the story and unpublish its chapters; comment removals are soft-deletions that preserve the original text and the moderator who removed it for audit purposes.
 
 ## Website authentication and route protection
 

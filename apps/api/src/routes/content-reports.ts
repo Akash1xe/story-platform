@@ -39,6 +39,15 @@ const listSchema = z.object({
 const decisionSchema = z.object({
   decision: z.enum(["RESOLVED", "DISMISSED"]),
   note: z.string().trim().max(2000).optional().default(""),
+  removeContent: z.boolean().optional().default(false),
+}).superRefine((value, context) => {
+  if (value.decision === "DISMISSED" && value.removeContent) {
+    context.addIssue({
+      code: "custom",
+      path: ["removeContent"],
+      message: "Dismissed reports cannot remove content.",
+    });
+  }
 });
 
 function currentUserId(response: Response) {
@@ -103,6 +112,7 @@ router.post("/", requireAuthenticatedUser, async (request, response, next) => {
       const comment = await prisma.chapterComment.findFirst({
         where: {
           id: input.targetId,
+          removedAt: null,
           chapter: {
             is: {
               isPublished: true,
@@ -244,41 +254,81 @@ router.post(
         return;
       }
 
-      const result = await prisma.contentReport.updateMany({
-        where: { id: reportId.data, status: "PENDING" },
-        data: {
-          status: parsed.data.decision,
-          decisionNote: parsed.data.note || null,
-          reviewerId: currentUserId(response),
-          reviewedAt: new Date(),
-        },
+      const reviewerId = currentUserId(response);
+      const { decision, note, removeContent } = parsed.data;
+      const now = new Date();
+
+      const outcome = await prisma.$transaction(async (transaction) => {
+        const pendingReport = await transaction.contentReport.findFirst({
+          where: { id: reportId.data, status: "PENDING" },
+          select: { id: true, targetType: true, targetId: true },
+        });
+
+        if (!pendingReport) {
+          const existing = await transaction.contentReport.findUnique({
+            where: { id: reportId.data },
+            select: { id: true },
+          });
+          return existing
+            ? { kind: "already_reviewed" as const }
+            : { kind: "not_found" as const };
+        }
+
+        const updated = await transaction.contentReport.updateMany({
+          where: { id: pendingReport.id, status: "PENDING" },
+          data: {
+            status: decision,
+            decisionNote: note || null,
+            moderationAction: removeContent ? "CONTENT_REMOVED" : "NONE",
+            reviewerId,
+            reviewedAt: now,
+          },
+        });
+
+        if (updated.count !== 1) {
+          return { kind: "already_reviewed" as const };
+        }
+
+        if (removeContent) {
+          if (pendingReport.targetType === "STORY") {
+            await transaction.story.updateMany({
+              where: { id: pendingReport.targetId, status: "PUBLISHED" },
+              data: { status: "ARCHIVED", publishedAt: null },
+            });
+            await transaction.chapter.updateMany({
+              where: { storyId: pendingReport.targetId, isPublished: true },
+              data: { isPublished: false, publishedAt: null },
+            });
+          } else {
+            await transaction.chapterComment.updateMany({
+              where: { id: pendingReport.targetId, removedAt: null },
+              data: { removedAt: now, removedById: reviewerId },
+            });
+          }
+        }
+
+        const report = await transaction.contentReport.findUniqueOrThrow({
+          where: { id: pendingReport.id },
+          include: {
+            reporter: { select: { id: true, displayName: true } },
+            reviewer: { select: { id: true, displayName: true } },
+          },
+        });
+
+        return { kind: "decided" as const, report };
       });
 
-      if (result.count !== 1) {
-        const existing = await prisma.contentReport.findUnique({
-          where: { id: reportId.data },
-          select: { id: true },
-        });
-        reportError(
-          response,
-          existing ? 409 : 404,
-          existing ? "REPORT_ALREADY_REVIEWED" : "REPORT_NOT_FOUND",
-          existing
-            ? "This report has already been reviewed. Refresh the queue."
-            : "This report could not be found.",
-        );
+      if (outcome.kind === "not_found") {
+        reportError(response, 404, "REPORT_NOT_FOUND", "This report could not be found.");
         return;
       }
 
-      const report = await prisma.contentReport.findUniqueOrThrow({
-        where: { id: reportId.data },
-        include: {
-          reporter: { select: { id: true, displayName: true } },
-          reviewer: { select: { id: true, displayName: true } },
-        },
-      });
+      if (outcome.kind === "already_reviewed") {
+        reportError(response, 409, "REPORT_ALREADY_REVIEWED", "This report has already been reviewed. Refresh the queue.");
+        return;
+      }
 
-      response.status(200).json({ report });
+      response.status(200).json({ report: outcome.report });
     } catch (error) {
       next(error);
     }

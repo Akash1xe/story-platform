@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertCircle, ArrowLeft, Check, CheckCheck, ExternalLink, Flag, LoaderCircle, ShieldCheck, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, CheckCheck, ExternalLink, EyeOff, Flag, LoaderCircle, ShieldCheck, Trash2, X } from "lucide-react";
 import { AuthNav } from "@/components/auth-nav";
 import styles from "./content-reports-page.module.css";
 
@@ -28,6 +28,7 @@ type ContentReport = {
   details: string | null;
   status: ReportStatus;
   decisionNote: string | null;
+  moderationAction: "NONE" | "CONTENT_REMOVED";
   reviewedAt: string | null;
   createdAt: string;
   reporter: { id: string; displayName: string };
@@ -127,8 +128,12 @@ export default function ContentReportsPage() {
     }
   }
 
-  async function decide(report: ContentReport, decision: "RESOLVED" | "DISMISSED") {
+  async function decide(report: ContentReport, decision: "RESOLVED" | "DISMISSED", removeContent = false) {
     if (pendingId) return;
+    if (removeContent) {
+      const action = report.targetType === "STORY" ? "Unpublish this story" : "Remove this comment";
+      if (!window.confirm(action + "? The content will no longer appear publicly. This action will be recorded.")) return;
+    }
     const note = notes[report.id]?.trim() ?? "";
     setPendingId(report.id);
     setError("");
@@ -139,7 +144,7 @@ export default function ContentReportsPage() {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({ decision, note }),
+          body: JSON.stringify({ decision, note, removeContent }),
         },
       );
       if (!response.ok) throw new Error(await responseMessage(response, "The report could not be updated."));
@@ -235,6 +240,7 @@ export default function ContentReportsPage() {
                       <div className={styles.reviewed}>
                         <strong>{statusLabel(report.status)} by {report.reviewer?.displayName ?? "moderator"}</strong>
                         {report.reviewedAt && <time dateTime={report.reviewedAt}>{formatDate(report.reviewedAt)}</time>}
+                        {report.moderationAction === "CONTENT_REMOVED" && <p className={styles.removalRecord}>Content removed by moderator.</p>}
                         {report.decisionNote && <p>{report.decisionNote}</p>}
                       </div>
                     )}
@@ -253,7 +259,18 @@ export default function ContentReportsPage() {
                       </label>
                       <div>
                         <button type="button" className={styles.resolve} onClick={() => void decide(report, "RESOLVED")} disabled={pendingId !== null}>
-                          <Check size={14} /> {pendingId === report.id ? "Saving…" : "Resolve"}
+                          <Check size={14} /> Resolve
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.removeContent}
+                          onClick={() => void decide(report, "RESOLVED", true)}
+                          disabled={pendingId !== null}
+                          aria-label={report.targetType === "STORY" ? "Unpublish story" : "Remove comment"}
+                          title={report.targetType === "STORY" ? "Unpublish story" : "Remove comment"}
+                        >
+                          {report.targetType === "STORY" ? <EyeOff size={14} /> : <Trash2 size={14} />}
+                          {pendingId === report.id ? "Saving…" : report.targetType === "STORY" ? "Unpublish" : "Remove"}
                         </button>
                         <button type="button" className={styles.dismiss} onClick={() => void decide(report, "DISMISSED")} disabled={pendingId !== null}>
                           <X size={14} /> Dismiss
