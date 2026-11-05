@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock3, Feather, Layers3, Sparkles } from "lucide-react";
 import { getPublicStory } from "@/lib/public-stories";
 import ContentReportButton from "@/components/content-report-button";
+import StoryRating from "@/components/story-rating";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -47,6 +48,7 @@ export default async function StoryDetailsPage({ params }: PageProps) {
           <p className="detail-byline">Created by <Link href={`/creators/${story.author.id}`}>{story.author.displayName}</Link></p>
           <p className="detail-description">{story.synopsis}</p>
           <div className="detail-tag-list"><span><Layers3 size={13} />{format}</span><span><Clock3 size={13} />{story.chapters.length} chapters</span><span><CheckCircle2 size={13} />{story.publicationStatus === "COMPLETED" ? "Completed" : "Ongoing"}</span></div>
+          <StoryRating slug={story.slug} ownerId={story.author.id} />
           {firstChapter && <div className="detail-actions">
             <Link className="button-primary" href={`/stories/${story.slug}/read/${firstChapter.number}`}>Start reading <ArrowRight size={16} /></Link>
             <Link className="button-secondary" href="/discover">Explore more stories</Link>
