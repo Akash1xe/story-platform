@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Bell, CheckCheck, Circle, LoaderCircle } from "lucide-react";
+import { SiteHeader } from "@/components/site-header";
 import { AuthNav } from "@/components/auth-nav";
 import styles from "./notifications-page.module.css";
 
@@ -148,21 +149,7 @@ export default function NotificationsPage() {
 
   return (
     <>
-      <header className="site-header">
-        <div className="header-inner">
-          <Link href="/" className="brand" aria-label="StoryWorld home">
-            <span className="brand-icon"><Bell size={19} /></span>
-            <span>StoryWorld<span className="brand-period">.</span></span>
-          </Link>
-          <nav className="desktop-nav" aria-label="Main navigation">
-            <Link href="/">Home</Link>
-            <Link href="/discover">Discover</Link>
-            <Link href="/library">My Library</Link>
-            <Link href="/following">Following</Link>
-          </nav>
-          <div className="header-actions"><AuthNav /></div>
-        </div>
-      </header>
+      <SiteHeader brandIcon={<Bell size={19} />} actions={<AuthNav />} />
 
       <main className={styles.shell}>
         <Link className={styles.back} href="/"><ArrowLeft size={14} /> Back to StoryWorld</Link>
