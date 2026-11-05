@@ -50,9 +50,10 @@ pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105040000_add_content_reports
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105050000_add_content_moderation_actions
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105060000_add_story_ratings
+pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105070000_add_reader_lists
 ```
 
-The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the seven `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
+The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the eight `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
 
 Start the API:
 
@@ -90,6 +91,9 @@ Better Auth is mounted at `/api/auth/*` and provides email/password sign-up, sig
 - `POST /api/v1/creator/stories/:storyId/submit` validates and submits a draft for moderation.
 - `GET /api/v1/moderation/reviews` lists submissions for moderators and admins.
 - `GET /api/v1/library` lists the signed-in reader’s saved published stories.
+- `GET /api/v1/reading-lists` lists the signed-in reader’s private reading lists and their published stories.
+- `POST /api/v1/reading-lists` creates a list; `PATCH` renames or updates its description; `DELETE` removes it.
+- `POST /api/v1/reading-lists/:listId/stories/:storySlug` adds a published story; `DELETE` removes it from that list.
 - `POST /api/v1/library/:storySlug` saves a published story; `DELETE` removes it.
 - `GET /api/v1/reading-progress` lists the reader’s latest chapter progress.
 - `GET /api/v1/reading-progress/:chapterId` loads the saved position for a chapter.
@@ -119,7 +123,7 @@ Public creator pages are available at `/creators/:creatorId`; the route accepts 
 
 The Prisma `User` model stores nullable creator profile fields so existing reader accounts remain valid. A fresh local database includes these fields when the initial migration is generated. Existing databases should apply pending committed migrations with `pnpm db:deploy` before deploying creator profile, follow, chapter comment, notification, or content-reporting features.
 
-Creator follows, reader bookmarks, chapter progress and chapter comments are stored in PostgreSQL. Apply pending creator profile, CreatorFollow, ChapterComment, Notification, ContentReport, and content moderation action migrations with `pnpm db:deploy` before deploying these features. The public creator profile includes a live follower count and a follow/unfollow control for signed-in readers. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter. Chapter comments are public to readers of published chapters; posting requires sign-in, and only the comment author can edit or delete their own comment. When a moderator approves a creator submission, followers receive an in-app notification in the same database transaction; no email or push delivery is configured.
+Creator follows, reader bookmarks, private reading lists, chapter progress and chapter comments are stored in PostgreSQL. Readers can create up to 50 named lists, add published stories from their saved library, and manage the lists independently; deleting a list does not remove stories from My Library. Apply pending creator profile, CreatorFollow, ChapterComment, Notification, ContentReport, and content moderation action migrations with `pnpm db:deploy` before deploying these features. The public creator profile includes a live follower count and a follow/unfollow control for signed-in readers. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter. Chapter comments are public to readers of published chapters; posting requires sign-in, and only the comment author can edit or delete their own comment. When a moderator approves a creator submission, followers receive an in-app notification in the same database transaction; no email or push delivery is configured.
 
 The Admin Review workspace uses the database-backed moderation API. The separate Content Reports workspace lets moderators review reader reports about published stories and chapter comments. Reports preserve a snapshot of the reported content and the reporter’s reason for review. A moderator can resolve a report without removing content, dismiss it, unpublish a reported story, or remove a reported chapter comment. Story takedowns archive the story and unpublish its chapters; comment removals are soft-deletions that preserve the original text and the moderator who removed it for audit purposes.
 
