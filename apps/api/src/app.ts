@@ -17,6 +17,7 @@ import chapterCommentsRouter from "./routes/chapter-comments.js";
 import notificationsRouter from "./routes/notifications.js";
 import contentReportsRouter from "./routes/content-reports.js";
 import storyRatingsRouter from "./routes/story-ratings.js";
+import readerRecommendationsRouter from "./routes/reader-recommendations.js";
 
 export const app = express();
 
@@ -73,6 +74,7 @@ app.use("/api/v1", chapterCommentsRouter);
 app.use("/api/v1/notifications", notificationsRouter);
 app.use("/api/v1/reports", contentReportsRouter);
 app.use("/api/v1/ratings", storyRatingsRouter);
+app.use("/api/v1/recommendations", readerRecommendationsRouter);
 app.use("/api/v1", readerLibraryRouter);
 
 app.use((_request, response) => {

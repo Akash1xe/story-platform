@@ -17,6 +17,7 @@ export type PublicStorySummary = {
     averageRating: number | null;
     ratingCount: number;
   };
+  recommendationReason?: string;
 };
 
 export type PublicStoryDetail = PublicStorySummary & {
@@ -141,6 +142,7 @@ export function toCatalogStory(story: PublicStorySummary): Story {
     status: story.publicationStatus === "COMPLETED" ? "Completed" : "Ongoing",
     averageRating: story.ratingSummary?.averageRating ?? null,
     ratingCount: story.ratingSummary?.ratingCount ?? 0,
+    recommendationReason: story.recommendationReason,
     previewTitle: story.chapters[0]?.title ?? "First chapter",
     previewParagraphs: [],
   };

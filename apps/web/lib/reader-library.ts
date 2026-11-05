@@ -49,3 +49,30 @@ export async function fetchReaderLibrary(): Promise<ReaderLibraryData> {
     }] : []),
   };
 }
+
+
+export type ReaderRecommendation = {
+  story: Story;
+  reason: string;
+};
+
+export async function fetchReaderRecommendations(): Promise<ReaderRecommendation[]> {
+  const response = await fetch("/api/v1/recommendations", {
+    credentials: "include",
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error("Personalized recommendations could not be loaded.");
+  }
+  const payload = await response.json() as {
+    recommendations: Array<{ story: PublicStorySummary; reason: string }>;
+  };
+  return payload.recommendations.map((item) => ({
+    story: {
+      ...toCatalogStory(item.story),
+      recommendationReason: item.reason,
+    },
+    reason: item.reason,
+  }));
+}
