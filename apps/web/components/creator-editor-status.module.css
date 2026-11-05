@@ -1,0 +1,39 @@
+.headingStatus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.saveState {
+  min-height: 29px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.saved {
+  border-color: #395344;
+  background: #17251e;
+  color: #a9d2b7;
+}
+
+.unsaved {
+  border-color: #66543b;
+  background: #282219;
+  color: #e4c18f;
+}
+
+@media (max-width: 560px) {
+  .headingStatus {
+    justify-content: flex-start;
+  }
+}
