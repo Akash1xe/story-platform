@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowDownAZ,
@@ -98,13 +98,10 @@ export default function DiscoverPage({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(initialError ?? "");
   const [retryKey, setRetryKey] = useState(0);
-  const hasSkippedInitialRequest = useRef(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   useEffect(() => {
-    if (!hasSkippedInitialRequest.current) {
-      hasSkippedInitialRequest.current = true;
-      return;
-    }
+    if (!hasInteracted) return;
 
     const controller = new AbortController();
     const delay = window.setTimeout(async () => {
@@ -144,7 +141,7 @@ export default function DiscoverPage({
       window.clearTimeout(delay);
       controller.abort();
     };
-  }, [query, selectedGenre, format, status, sort, page, retryKey]);
+  }, [hasInteracted, query, selectedGenre, format, status, sort, page, retryKey]);
 
   const activeFilterCount = [
     query.trim().length > 0,
@@ -155,6 +152,7 @@ export default function DiscoverPage({
   const hasActiveFilters = activeFilterCount > 0 || sort !== "newest";
 
   function clearFilters() {
+    setHasInteracted(true);
     setQuery("");
     setSelectedGenre("");
     setFormat("");
@@ -164,6 +162,7 @@ export default function DiscoverPage({
   }
 
   function retryRequest() {
+    setHasInteracted(true);
     setRetryKey((current) => current + 1);
   }
 
@@ -233,6 +232,7 @@ export default function DiscoverPage({
             maxLength={120}
             value={query}
             onChange={(event) => {
+              setHasInteracted(true);
               setQuery(event.target.value);
               setPage(1);
             }}
@@ -242,6 +242,7 @@ export default function DiscoverPage({
               type="button"
               className="discover-clear-search"
               onClick={() => {
+                setHasInteracted(true);
                 setQuery("");
                 setPage(1);
               }}
@@ -269,6 +270,7 @@ export default function DiscoverPage({
                     key={option.value || "all-formats"}
                     className={format === option.value ? "discover-filter-option is-active" : "discover-filter-option"}
                     onClick={() => {
+                      setHasInteracted(true);
                       setFormat(option.value);
                       setPage(1);
                     }}
@@ -291,6 +293,7 @@ export default function DiscoverPage({
                       key={genre}
                       className={selectedGenre === genre ? "discover-genre-chip is-active" : "discover-genre-chip"}
                       onClick={() => {
+                        setHasInteracted(true);
                         setSelectedGenre((current) => current === genre ? "" : genre);
                         setPage(1);
                       }}
@@ -314,6 +317,7 @@ export default function DiscoverPage({
                     key={option.value || "all-status"}
                     className={status === option.value ? "discover-filter-option is-active" : "discover-filter-option"}
                     onClick={() => {
+                      setHasInteracted(true);
                       setStatus(option.value);
                       setPage(1);
                     }}
@@ -351,6 +355,7 @@ export default function DiscoverPage({
                 <select
                   value={sort}
                   onChange={(event) => {
+                    setHasInteracted(true);
                     setSort(event.target.value as SortValue);
                     setPage(1);
                   }}
@@ -417,7 +422,10 @@ export default function DiscoverPage({
                   <nav className="discover-pagination" aria-label="Story result pages">
                     <button
                       type="button"
-                      onClick={() => setPage((current) => Math.max(1, current - 1))}
+                      onClick={() => {
+                        setHasInteracted(true);
+                        setPage((current) => Math.max(1, current - 1));
+                      }}
                       disabled={isLoading || page <= 1}
                     >
                       <ArrowLeft size={14} /> Previous
@@ -425,7 +433,10 @@ export default function DiscoverPage({
                     <span>Page <strong>{pagination.page}</strong> of {pagination.totalPages}</span>
                     <button
                       type="button"
-                      onClick={() => setPage((current) => Math.min(pagination.totalPages, current + 1))}
+                      onClick={() => {
+                        setHasInteracted(true);
+                        setPage((current) => Math.min(pagination.totalPages, current + 1));
+                      }}
                       disabled={isLoading || page >= pagination.totalPages}
                     >
                       Next <ArrowRight size={14} />
