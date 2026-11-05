@@ -49,7 +49,7 @@ pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105
 pnpm --filter @story-platform/api exec prisma migrate resolve --applied 20261105030000_add_notifications
 ```
 
-The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the four `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
+The repository currently tracks incremental feature migrations, not a complete baseline migration. The `db push` step creates all tables from the current Prisma schema; the five `migrate resolve` commands record the already-created feature structures so later deployments do not try to create them again. For an existing database that already has the base StoryWorld tables, apply pending committed migrations with `pnpm db:deploy`.
 
 Start the API:
 
@@ -110,11 +110,11 @@ Only DRAFT stories can be edited or submitted. Once submitted, the story is lock
 
 Public creator pages are available at `/creators/:creatorId`; the route accepts either the legacy creator ID or the custom handle. Creator Studio includes profile settings for the public name, avatar URL, unique handle, 500-character bio and website URL. Public pages show these fields, the account join date, follower count and published stories only. Creator email addresses and unpublished work are not included.
 
-The Prisma `User` model stores nullable creator profile fields so existing reader accounts remain valid. A fresh local database includes these fields when the initial migration is generated. Existing databases should apply pending committed migrations with `pnpm db:deploy` before deploying creator profile, follow, chapter comment, or notification features.
+The Prisma `User` model stores nullable creator profile fields so existing reader accounts remain valid. A fresh local database includes these fields when the initial migration is generated. Existing databases should apply pending committed migrations with `pnpm db:deploy` before deploying creator profile, follow, chapter comment, notification, or content-reporting features.
 
-Creator follows, reader bookmarks, chapter progress and chapter comments are stored in PostgreSQL. Apply pending creator profile, CreatorFollow, ChapterComment, and Notification migrations with `pnpm db:deploy` before deploying these features. The public creator profile includes a live follower count and a follow/unfollow control for signed-in readers. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter. Chapter comments are public to readers of published chapters; posting requires sign-in, and only the comment author can edit or delete their own comment. When a moderator approves a creator submission, followers receive an in-app notification in the same database transaction; no email or push delivery is configured.
+Creator follows, reader bookmarks, chapter progress and chapter comments are stored in PostgreSQL. Apply pending creator profile, CreatorFollow, ChapterComment, Notification, and ContentReport migrations with `pnpm db:deploy` before deploying these features. The public creator profile includes a live follower count and a follow/unfollow control for signed-in readers. The library API only exposes published stories, and progress writes only accept published chapters. The website sends progress updates as the reader scrolls; signing in on another device loads the same library and last-read chapter. Chapter comments are public to readers of published chapters; posting requires sign-in, and only the comment author can edit or delete their own comment. When a moderator approves a creator submission, followers receive an in-app notification in the same database transaction; no email or push delivery is configured.
 
-The existing Admin Review screen still uses its local prototype data for review decisions. The API submission is available through the moderator queue endpoint, but database-backed moderation actions and replacing the local queue UI are a follow-up milestone.
+The Admin Review workspace uses the database-backed moderation API. The separate Content Reports workspace lets moderators review reader reports about published stories and chapter comments. Reports preserve a snapshot of the reported content and the reporter’s reason for review.
 
 ## Website authentication and route protection
 

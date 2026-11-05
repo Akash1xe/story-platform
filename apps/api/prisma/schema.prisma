@@ -41,6 +41,27 @@ enum NotificationType {
   NEW_STORY
 }
 
+enum ContentReportTargetType {
+  STORY
+  CHAPTER_COMMENT
+}
+
+enum ContentReportReason {
+  SPAM
+  HARASSMENT
+  HATE_SPEECH
+  SEXUAL_CONTENT
+  VIOLENCE
+  COPYRIGHT
+  OTHER
+}
+
+enum ContentReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
 model User {
   id                String             @id @default(cuid())
   email             String             @unique
@@ -63,6 +84,8 @@ model User {
   creatorFollowers  CreatorFollow[]    @relation("CreatorFollowers")
   chapterCommentsAuthored ChapterComment[]
   notifications          Notification[] @relation("NotificationRecipient")
+  contentReportsFiled     ContentReport[] @relation("ContentReportReporter")
+  contentReportsReviewed  ContentReport[] @relation("ContentReportReviewer")
 }
 
 model CreatorFollow {
@@ -268,4 +291,29 @@ model Notification {
 
   @@index([recipientId, createdAt])
   @@index([recipientId, readAt, createdAt])
+}
+
+
+model ContentReport {
+  id             String                  @id @default(cuid())
+  reporterId     String
+  reviewerId     String?
+  targetType     ContentReportTargetType
+  targetId       String
+  targetTitle    String
+  targetExcerpt  String                  @db.Text
+  targetUrl      String
+  reason         ContentReportReason
+  details        String?                 @db.VarChar(1000)
+  status         ContentReportStatus     @default(PENDING)
+  decisionNote   String?                 @db.VarChar(2000)
+  reviewedAt     DateTime?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  reporter       User                    @relation("ContentReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewer       User?                   @relation("ContentReportReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([reporterId, createdAt])
+  @@index([targetType, targetId, status])
 }

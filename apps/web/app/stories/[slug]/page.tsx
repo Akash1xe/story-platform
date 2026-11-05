@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock3, Feather, Layers3, Sparkles } from "lucide-react";
 import { getPublicStory } from "@/lib/public-stories";
+import ContentReportButton from "@/components/content-report-button";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -49,6 +50,7 @@ export default async function StoryDetailsPage({ params }: PageProps) {
           {firstChapter && <div className="detail-actions">
             <Link className="button-primary" href={`/stories/${story.slug}/read/${firstChapter.number}`}>Start reading <ArrowRight size={16} /></Link>
             <Link className="button-secondary" href="/discover">Explore more stories</Link>
+            <ContentReportButton targetType="STORY" targetId={story.id} ownerId={story.author.id} />
           </div>}
         </div>
       </section>

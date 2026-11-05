@@ -173,6 +173,7 @@ export default function AdminReviewWorkspace() {
             <Link href="/discover">Discover</Link>
             <Link href="/creator">Creator Studio</Link>
             <Link className="nav-active" href="/admin/reviews">Review queue</Link>
+            <Link href="/admin/reports">Content reports</Link>
           </nav>
           <div className="header-actions">
             <Link href="/creator" className="creator-button">Creator workspace</Link>

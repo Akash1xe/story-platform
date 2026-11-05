@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MessageCircle, Pencil, Send, Trash2, X } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import styles from "./chapter-comments.module.css";
+import ContentReportButton from "@/components/content-report-button";
 
 type ChapterCommentRecord = {
   id: string;
@@ -244,12 +245,14 @@ export default function ChapterComments({ slug, chapterNumber }: ChapterComments
                     <time dateTime={comment.createdAt}>{formatCommentDate(comment.createdAt)}</time>
                     {comment.updatedAt !== comment.createdAt && <small>Edited</small>}
                   </div>
-                  {isAuthor && editingId !== comment.id && (
+                  {isAuthor && editingId !== comment.id ? (
                     <div className={styles.actions}>
                       <button type="button" aria-label="Edit comment" onClick={() => startEdit(comment)}><Pencil size={14} /></button>
                       <button type="button" aria-label="Delete comment" disabled={deletingId === comment.id} onClick={() => void deleteComment(comment.id)}><Trash2 size={14} /></button>
                     </div>
-                  )}
+                  ) : !isAuthor ? (
+                    <ContentReportButton targetType="CHAPTER_COMMENT" targetId={comment.id} />
+                  ) : null}
                 </div>
 
                 {editingId === comment.id ? (
