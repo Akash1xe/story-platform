@@ -16,6 +16,7 @@ const panelSchema = z.string().url().max(2_048).refine(
 );
 
 const chapterSchema = z.object({
+  chapterId: z.string().trim().min(1).max(100).optional(),
   title: z.string().trim().min(1).max(120),
   summary: z.string().trim().max(300).default(""),
   body: z.string().max(500_000).default(""),
@@ -126,12 +127,34 @@ async function syncChapters(
 ) {
   const existingChapters = await transaction.chapter.findMany({
     where: { storyId },
-    select: { id: true, number: true },
+    select: { id: true },
+  });
+  const existingIds = new Set(existingChapters.map((chapter) => chapter.id));
+  const submittedIds = story.chapters.flatMap((chapter) =>
+    chapter.chapterId ? [chapter.chapterId] : [],
+  );
+  const keepIds = new Set(submittedIds);
+
+  // Temporarily move current chapters out of the positive number range so
+  // reordering cannot collide with the unique (storyId, number) constraint.
+  for (const [index, existing] of existingChapters.entries()) {
+    await transaction.chapter.update({
+      where: { id: existing.id },
+      data: { number: -(index + 1) },
+    });
+  }
+
+  await transaction.chapter.deleteMany({
+    where: {
+      storyId,
+      ...(keepIds.size > 0 ? { id: { notIn: [...keepIds] } } : {}),
+    },
   });
 
+  const savedChapters: Array<{ id: string; number: number }> = [];
+  let temporaryNumber = -(existingChapters.length + 1);
+
   for (const [index, chapter] of story.chapters.entries()) {
-    const number = index + 1;
-    const existing = existingChapters.find((item) => item.number === number);
     const panels = chapter.panelUrls.map((imageUrl, panelIndex) => ({
       position: panelIndex + 1,
       imageUrl,
@@ -144,35 +167,39 @@ async function syncChapters(
       body: story.format === "Comic" ? null : chapter.body,
     };
 
-    if (existing) {
-      await transaction.chapter.update({
-        where: { id: existing.id },
+    let saved: { id: string };
+    if (chapter.chapterId && existingIds.has(chapter.chapterId)) {
+      saved = await transaction.chapter.update({
+        where: { id: chapter.chapterId },
         data: {
+          number: temporaryNumber,
           ...chapterData,
-          panels: {
-            deleteMany: {},
-            create: panels,
-          },
+          panels: { deleteMany: {}, create: panels },
         },
+        select: { id: true },
       });
     } else {
-      await transaction.chapter.create({
+      saved = await transaction.chapter.create({
         data: {
           storyId,
-          number,
+          number: temporaryNumber,
           ...chapterData,
           panels: { create: panels },
         },
+        select: { id: true },
       });
     }
+
+    savedChapters.push({ id: saved.id, number: index + 1 });
+    temporaryNumber -= 1;
   }
 
-  await transaction.chapter.deleteMany({
-    where: {
-      storyId,
-      number: { gt: story.chapters.length },
-    },
-  });
+  for (const saved of savedChapters) {
+    await transaction.chapter.update({
+      where: { id: saved.id },
+      data: { number: saved.number },
+    });
+  }
 }
 
 router.use(
