@@ -62,10 +62,10 @@ router.get("/", async (request, response, next) => {
 
     const orderBy: Prisma.StoryOrderByWithRelationInput[] =
       sort === "oldest"
-        ? [{ publishedAt: "asc" as const }, { createdAt: "asc" as const }]
+        ? [{ publishedAt: "asc" as const }, { createdAt: "asc" as const }, { id: "asc" as const }]
         : sort === "title"
-          ? [{ title: "asc" as const }]
-          : [{ publishedAt: "desc" as const }, { createdAt: "desc" as const }];
+          ? [{ title: "asc" as const }, { id: "asc" as const }]
+          : [{ publishedAt: "desc" as const }, { createdAt: "desc" as const }, { id: "desc" as const }];
 
     const [stories, total, genreRows] = await prisma.$transaction([
       prisma.story.findMany({
