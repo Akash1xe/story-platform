@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { BookMarked, Plus, Trash2, X } from "lucide-react";
+import { BookMarked, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import type { Story } from "@/lib/demo-content";
 import { useReaderLibrary } from "@/hooks/use-reader-library";
 
@@ -44,6 +44,9 @@ export default function ReadingListsPanel() {
   const [selectedListId, setSelectedListId] = useState("");
   const [listName, setListName] = useState("");
   const [description, setDescription] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editing, setEditing] = useState(false);
   const [selectedStorySlug, setSelectedStorySlug] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -115,6 +118,49 @@ export default function ReadingListsPanel() {
     }
   }
 
+  function beginEditing() {
+    if (!selectedList) return;
+    setEditName(selectedList.name);
+    setEditDescription(selectedList.description ?? "");
+    setEditing(true);
+    setError("");
+    setNotice("");
+  }
+
+  function cancelEditing() {
+    setEditing(false);
+    setEditName("");
+    setEditDescription("");
+  }
+
+  async function saveListDetails(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedList || saving || editName.trim().length < 2) return;
+    setSaving(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch(
+        "/api/v1/reading-lists/" + encodeURIComponent(selectedList.id),
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ name: editName, description: editDescription }),
+        },
+      );
+      if (!response.ok) throw new Error(await responseError(response, "The reading list could not be updated."));
+      const payload = await response.json() as { list: ReadingList };
+      setLists((current) => current.map((list) => list.id === payload.list.id ? payload.list : list));
+      setEditing(false);
+      setNotice("Reading list updated.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "The reading list could not be updated.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function addStory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedList || !selectedStorySlug || saving) return;
@@ -170,6 +216,7 @@ export default function ReadingListsPanel() {
         headers: { Accept: "application/json" },
       });
       if (!response.ok) throw new Error(await responseError(response, "The reading list could not be deleted."));
+      cancelEditing();
       await refresh();
       setNotice("Reading list deleted. Saved stories remain in your library.");
     } catch (reason) {
@@ -219,7 +266,13 @@ export default function ReadingListsPanel() {
             {lists.map((list) => (
               <button key={list.id} type="button"
                 className={selectedListId === list.id ? "reading-list-tab is-active" : "reading-list-tab"}
-                onClick={() => { setSelectedListId(list.id); setSelectedStorySlug(""); }}
+                onClick={() => {
+                  setSelectedListId(list.id);
+                  setSelectedStorySlug("");
+                  cancelEditing();
+                  setError("");
+                  setNotice("");
+                }}
                 aria-pressed={selectedListId === list.id}>
                 <span>{list.name}</span><small>{list.entries.length}</small>
               </button>
@@ -228,10 +281,42 @@ export default function ReadingListsPanel() {
           {selectedList && (
             <div className="reading-list-content">
               <div className="reading-list-detail-heading">
-                <div><h3>{selectedList.name}</h3><p>{selectedList.description || "A personal collection of stories."}</p></div>
-                <button type="button" className="reading-list-delete" onClick={() => void deleteList()} disabled={saving}>
-                  <Trash2 size={14} /> Delete list
-                </button>
+                {editing ? (
+                  <form className="reading-list-edit-form" onSubmit={saveListDetails}>
+                    <div className="reading-list-edit-fields">
+                      <label>
+                        <span>List name</span>
+                        <input value={editName} onChange={(event) => setEditName(event.target.value)}
+                          minLength={2} maxLength={40} required disabled={saving} autoFocus />
+                      </label>
+                      <label>
+                        <span>Description <small>Optional</small></span>
+                        <input value={editDescription} onChange={(event) => setEditDescription(event.target.value)}
+                          maxLength={160} placeholder="What belongs in this collection?" disabled={saving} />
+                      </label>
+                    </div>
+                    <div className="reading-list-edit-actions">
+                      <button type="submit" className="reading-list-save" disabled={saving || editName.trim().length < 2}>
+                        <Save size={13} /> Save changes
+                      </button>
+                      <button type="button" className="reading-list-cancel" onClick={cancelEditing} disabled={saving}>
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div><h3>{selectedList.name}</h3><p>{selectedList.description || "A personal collection of stories."}</p></div>
+                )}
+                <div className="reading-list-heading-actions">
+                  {!editing && (
+                    <button type="button" className="reading-list-edit" onClick={beginEditing} disabled={saving}>
+                      <Pencil size={13} /> Edit list
+                    </button>
+                  )}
+                  <button type="button" className="reading-list-delete" onClick={() => void deleteList()} disabled={saving}>
+                    <Trash2 size={14} /> Delete list
+                  </button>
+                </div>
               </div>
               {availableStories.length > 0 ? (
                 <form className="reading-list-add" onSubmit={addStory}>
