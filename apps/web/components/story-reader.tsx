@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -11,6 +11,7 @@ import {
   Sun
 } from "lucide-react";
 import type { Story } from "@/lib/demo-content";
+import { useReaderLibrary } from "@/hooks/use-reader-library";
 
 type StoryReaderProps = {
   story: Story;
@@ -20,6 +21,23 @@ export default function StoryReader({ story }: StoryReaderProps) {
   const [fontScale, setFontScale] = useState(0);
   const [paperTheme, setPaperTheme] = useState(false);
   const [progress, setProgress] = useState(0);
+  const didRestoreProgress = useRef(false);
+  const { library, isReady, recordReadingProgress } = useReaderLibrary();
+
+  useEffect(() => {
+    if (!isReady || didRestoreProgress.current) return;
+
+    didRestoreProgress.current = true;
+    const savedPercent = library.progress[story.id]?.percent ?? 0;
+    setProgress(savedPercent);
+
+    if (savedPercent > 0) {
+      window.requestAnimationFrame(() => {
+        const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+        window.scrollTo(0, (savedPercent / 100) * scrollableHeight);
+      });
+    }
+  }, [isReady, library.progress, story.id]);
 
   useEffect(() => {
     const updateProgress = () => {
@@ -42,6 +60,11 @@ export default function StoryReader({ story }: StoryReaderProps) {
 
     return () => window.removeEventListener("scroll", updateProgress);
   }, []);
+
+  useEffect(() => {
+    if (!isReady || !didRestoreProgress.current || progress <= 0) return;
+    recordReadingProgress(story.id, progress);
+  }, [isReady, progress, recordReadingProgress, story.id]);
 
   const isComic = story.type === "Comic" && Boolean(story.comicPanels?.length);
 

@@ -17,6 +17,8 @@ export type ComicPanel = {
 
 export type Story = {
   id: string;
+  creatorId?: string;
+  isPublished?: boolean;
   title: string;
   creator: string;
   genre: string;
@@ -25,6 +27,8 @@ export type Story = {
   coverImage: string;
   description: string;
   status: "Ongoing" | "Completed";
+  averageRating?: number | null;
+  ratingCount?: number;
   previewTitle: string;
   previewParagraphs: string[];
   comicPanels?: ComicPanel[];

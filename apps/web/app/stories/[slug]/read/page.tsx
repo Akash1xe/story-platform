@@ -1,41 +1,13 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import StoryReader from "@/components/story-reader";
-import { allStories, getStoryBySlug } from "@/lib/demo-content";
+import { notFound, redirect } from "next/navigation";
+import { getPublicStory } from "@/lib/public-stories";
 
-type StoryReaderPageProps = {
-  params: Promise<{ slug: string }>;
-};
+type PageProps = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return allStories.map((story) => ({ slug: story.id }));
-}
-
-export async function generateMetadata({
-  params
-}: StoryReaderPageProps): Promise<Metadata> {
+export default async function StoryReaderLandingPage({ params }: PageProps) {
   const { slug } = await params;
-  const story = getStoryBySlug(slug);
-
-  if (!story) {
-    return { title: "Story not found | StoryWorld" };
-  }
-
-  return {
-    title: `Reading ${story.title} | StoryWorld`,
-    description: `Read the sample ${story.type === "Comic" ? "episode" : "chapter"} of ${story.title}.`
-  };
-}
-
-export default async function StoryReaderPage({
-  params
-}: StoryReaderPageProps) {
-  const { slug } = await params;
-  const story = getStoryBySlug(slug);
-
-  if (!story) {
-    notFound();
-  }
-
-  return <StoryReader story={story} />;
+  const result = await getPublicStory(slug);
+  if (!result) notFound();
+  const firstChapter = result.story.chapters[0];
+  if (!firstChapter) notFound();
+  redirect(`/stories/${slug}/read/${firstChapter.number}`);
 }
