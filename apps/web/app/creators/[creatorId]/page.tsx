@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, BookOpen, CalendarDays, Layers3, PenLine, Sparkles } from "lucide-react";
 import StoryCard from "@/components/story-card";
+import { CreatorFollowButton } from "@/components/creator-follow-button";
 import { getPublicCreator, toCatalogStory } from "@/lib/public-stories";
 import profileStyles from "./profile.module.css";
 
@@ -52,6 +53,7 @@ export default async function PublicCreatorPage({ params }: PageProps) {
           {creator.handle && <p className={profileStyles.handle}>@{creator.handle}</p>}
           <p>{creator.bio || "Independent creator sharing original stories on StoryWorld."}</p>
           {creator.websiteUrl && <a className={profileStyles.website} href={creator.websiteUrl} target="_blank" rel="noreferrer noopener">Visit creator website</a>}
+          <CreatorFollowButton creatorId={creator.id} initialFollowersCount={creator.followersCount} />
           <div className="creator-profile-meta"><span><CalendarDays size={14} /> On StoryWorld since {joinedDate}</span><span><BookOpen size={14} /> {stories.length} published {stories.length === 1 ? "story" : "stories"}</span></div>
         </div>
         <div className="creator-profile-mark"><PenLine size={25} /><span>CREATOR<br />PROFILE</span></div>

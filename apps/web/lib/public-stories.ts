@@ -35,6 +35,7 @@ export type PublicCreatorProfile = {
   bio: string | null;
   websiteUrl: string | null;
   joinedAt: string;
+  followersCount: number;
   stories: PublicStorySummary[];
 };
 
