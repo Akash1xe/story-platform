@@ -3252,3 +3252,177 @@ input:focus-visible {
     white-space: nowrap;
   }
 }
+
+
+/* Public chapter-to-chapter navigation */
+.public-reader-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin: 42px auto 30px;
+  padding: 10px;
+  border: 1px solid #303746;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #171c27, #131822);
+}
+
+.public-reader-chapter-link {
+  min-width: 0;
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #f0edf7;
+  text-decoration: none;
+  transition: border-color .18s, background .18s, transform .18s;
+}
+
+.public-reader-chapter-link > svg {
+  flex: 0 0 auto;
+  color: #c5b0ff;
+}
+
+.public-reader-chapter-link > span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.public-reader-chapter-link small {
+  color: #9993ab;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+}
+
+.public-reader-chapter-link strong {
+  overflow: hidden;
+  color: #ece8f4;
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.public-reader-chapter-link:hover:not(.public-reader-chapter-link--disabled) {
+  transform: translateY(-1px);
+  border-color: #5b4b7d;
+  background: #211d30;
+}
+
+.public-reader-chapter-link--next {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.public-reader-chapter-link--disabled {
+  color: #6f7180;
+  cursor: default;
+}
+
+.public-reader-chapter-link--disabled > svg,
+.public-reader-chapter-link--disabled strong {
+  color: #777b89;
+}
+
+.public-reader-all-chapters {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid #3a4050;
+  border-radius: 8px;
+  background: #10151e;
+  color: #cfc7df;
+  font-size: 9px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.public-reader-all-chapters:hover {
+  border-color: #8069c5;
+  color: #f2ecff;
+}
+
+.reader-page--paper .public-reader-footer {
+  border-color: #dfd6c7;
+  background: linear-gradient(135deg, #f8f4ec, #eee8dc);
+}
+
+.reader-page--paper .public-reader-chapter-link {
+  color: #332d25;
+}
+
+.reader-page--paper .public-reader-chapter-link > svg {
+  color: #7659a9;
+}
+
+.reader-page--paper .public-reader-chapter-link small {
+  color: #81786b;
+}
+
+.reader-page--paper .public-reader-chapter-link strong {
+  color: #393228;
+}
+
+.reader-page--paper .public-reader-chapter-link:hover:not(.public-reader-chapter-link--disabled) {
+  border-color: #b5a3d1;
+  background: #eee8f8;
+}
+
+.reader-page--paper .public-reader-chapter-link--disabled > svg,
+.reader-page--paper .public-reader-chapter-link--disabled strong {
+  color: #aaa194;
+}
+
+.reader-page--paper .public-reader-all-chapters {
+  border-color: #d4cbbc;
+  background: #fffdf8;
+  color: #51483b;
+}
+
+.reader-page--paper .public-reader-all-chapters:hover {
+  border-color: #9a83ca;
+  color: #49366b;
+}
+
+@media (max-width: 560px) {
+  .public-reader-footer {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 7px;
+    margin-top: 30px;
+    padding: 7px;
+  }
+
+  .public-reader-chapter-link {
+    min-height: 61px;
+    gap: 7px;
+    padding: 8px 6px;
+  }
+
+  .public-reader-chapter-link > svg {
+    width: 14px;
+  }
+
+  .public-reader-chapter-link strong {
+    font-size: 9px;
+  }
+
+  .public-reader-chapter-link small {
+    font-size: 7px;
+  }
+
+  .public-reader-all-chapters {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+  }
+}

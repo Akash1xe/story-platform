@@ -206,9 +206,31 @@ router.get("/:slug/chapters/:chapterNumber", async (request, response, next) => 
       return;
     }
 
+    const [previousChapter, nextChapter] = await Promise.all([
+      prisma.chapter.findFirst({
+        where: {
+          storyId: story.id,
+          isPublished: true,
+          number: { lt: chapter.number },
+        },
+        select: { number: true, title: true },
+        orderBy: { number: "desc" },
+      }),
+      prisma.chapter.findFirst({
+        where: {
+          storyId: story.id,
+          isPublished: true,
+          number: { gt: chapter.number },
+        },
+        select: { number: true, title: true },
+        orderBy: { number: "asc" },
+      }),
+    ]);
+
     response.status(200).json({
       story: { id: story.id, slug: story.slug, title: story.title, format: story.format },
       chapter,
+      navigation: { previousChapter, nextChapter },
     });
   } catch (error) {
     next(error);

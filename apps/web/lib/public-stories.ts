@@ -68,6 +68,10 @@ export type PublicChapter = {
 export type PublicStoryPageData = {
   story: { id: string; slug: string; title: string; format: "COMIC" | "NOVEL" | "SHORT_STORY" };
   chapter: PublicChapter;
+  navigation: {
+    previousChapter: { number: number; title: string } | null;
+    nextChapter: { number: number; title: string } | null;
+  };
 };
 
 export type CatalogFilters = {
