@@ -131,7 +131,7 @@ export default function StoryRating({ slug, ownerId }: StoryRatingProps) {
     <section className={styles.rating} aria-label="Story rating">
       <div className={styles.summary}>
         <span className={styles.average}>
-          {loading ? "—" : summary?.averageRating == null ? "New" : summary?.averageRating.toFixed(1)}
+          {loading || error ? "—" : summary?.averageRating == null ? "New" : summary.averageRating.toFixed(1)}
         </span>
         <div>
           <div className={styles.stars} aria-hidden="true">
@@ -140,7 +140,7 @@ export default function StoryRating({ slug, ownerId }: StoryRatingProps) {
             ))}
           </div>
           <span className={styles.count}>
-            {loading ? "Loading ratings…" : summary?.ratingCount === 0 ? "No ratings yet" : String(summary?.ratingCount) + (summary?.ratingCount === 1 ? " rating" : " ratings")}
+            {loading ? "Loading ratings…" : !summary ? "Rating summary unavailable" : summary.ratingCount === 0 ? "No ratings yet" : String(summary.ratingCount) + (summary.ratingCount === 1 ? " rating" : " ratings")}
           </span>
         </div>
       </div>
