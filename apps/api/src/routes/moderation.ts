@@ -146,6 +146,27 @@ router.post("/:storyId/decision", async (request, response, next) => {
           : { isPublished: false, publishedAt: null },
       });
 
+      if (decision === "APPROVED") {
+        const publishedStory = await transaction.story.findUniqueOrThrow({
+          where: { id: request.params.storyId },
+          select: { id: true, authorId: true },
+        });
+        const followers = await transaction.creatorFollow.findMany({
+          where: { creatorId: publishedStory.authorId },
+          select: { followerId: true },
+        });
+
+        if (followers.length > 0) {
+          await transaction.notification.createMany({
+            data: followers.map(({ followerId }) => ({
+              recipientId: followerId,
+              storyId: publishedStory.id,
+              type: "NEW_STORY" as const,
+            })),
+          });
+        }
+      }
+
       await transaction.moderationReview.create({
         data: {
           storyId: request.params.storyId,

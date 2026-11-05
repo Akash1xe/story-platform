@@ -15,6 +15,7 @@ import {
   UserRound,
 } from "lucide-react";
 import StoryCard from "@/components/story-card";
+import NotificationBell from "@/components/notification-bell";
 import type { Story } from "@/lib/demo-content";
 
 type HomePageProps = {
@@ -68,6 +69,7 @@ export default function HomePage({ stories, genres, catalogUnavailable = false }
             <Link href="/creator">Creators</Link>
           </nav>
           <div className="header-actions">
+            <NotificationBell />
             <label className="search-box">
               <Search size={16} aria-hidden="true" />
               <input

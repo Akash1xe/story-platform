@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, Bookmark, Clock3, Compass, LibraryBig } from "lucide-react";
 import StoryCard from "@/components/story-card";
+import NotificationBell from "@/components/notification-bell";
 import { useReaderLibrary } from "@/hooks/use-reader-library";
 
 function formatLastRead(timestamp: number): string {
@@ -15,7 +16,7 @@ export default function LibraryPage() {
       <header className="site-header"><div className="header-inner">
         <Link href="/" className="brand" aria-label="StoryWorld home"><span className="brand-icon"><BookOpen size={20} /></span><span>StoryWorld<span className="brand-period">.</span></span></Link>
         <nav className="desktop-nav" aria-label="Main navigation"><Link href="/">Home</Link><Link href="/discover">Discover</Link><Link href="/#genres">Genres</Link><Link className="nav-active" href="/library">My Library</Link><Link href="/following">Following</Link></nav>
-        <div className="header-actions"><Link href="/discover" className="creator-button"><Compass size={14} /> Discover stories</Link></div>
+        <div className="header-actions"><NotificationBell /><Link href="/discover" className="creator-button"><Compass size={14} /> Discover stories</Link></div>
       </div></header>
       <main className="library-shell">
         <div className="library-heading"><div><span className="eyebrow">YOUR PERSONAL SPACE</span><h1>My Library</h1><p>Your saved stories and reading progress, synced to your account.</p></div><div className="library-heading-icon"><LibraryBig size={25} /></div></div>
