@@ -59,6 +59,26 @@ router.get("/:creatorId", async (request, response, next) => {
       return;
     }
 
+    const ratingRows = creator.stories.length
+      ? await prisma.storyRating.groupBy({
+          by: ["storyId"],
+          where: { storyId: { in: creator.stories.map((story) => story.id) } },
+          _avg: { value: true },
+          _count: { _all: true },
+        })
+      : [];
+    const ratingsByStoryId = new Map(
+      ratingRows.map((row) => [
+        row.storyId,
+        {
+          averageRating: row._avg.value === null
+            ? null
+            : Math.round(row._avg.value * 10) / 10,
+          ratingCount: row._count._all,
+        },
+      ]),
+    );
+
     response.status(200).json({
       creator: {
         id: creator.id,
@@ -69,7 +89,13 @@ router.get("/:creatorId", async (request, response, next) => {
         websiteUrl: creator.creatorWebsiteUrl,
         joinedAt: creator.createdAt,
         followersCount: creator._count.creatorFollowers,
-        stories: creator.stories,
+        stories: creator.stories.map((story) => ({
+          ...story,
+          ratingSummary: ratingsByStoryId.get(story.id) ?? {
+            averageRating: null,
+            ratingCount: 0,
+          },
+        })),
       },
     });
   } catch (error) {

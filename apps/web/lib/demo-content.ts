@@ -27,6 +27,8 @@ export type Story = {
   coverImage: string;
   description: string;
   status: "Ongoing" | "Completed";
+  averageRating?: number | null;
+  ratingCount?: number;
   previewTitle: string;
   previewParagraphs: string[];
   comicPanels?: ComicPanel[];
