@@ -58,3 +58,20 @@
   .reportBody { grid-template-columns: 1fr; gap: 14px; }
   .decision { max-width: none; }
 }
+
+.removeContent {
+  border: 1px solid #70434a !important;
+  background: #342126;
+  color: #f0b9bf;
+}
+.removeContent:hover { background: #44262d; }
+.removalRecord {
+  display: inline-block;
+  margin: 7px 0 0 !important;
+  padding: 5px 8px;
+  border: 1px solid #70434a;
+  border-radius: 6px;
+  background: #2a1b21;
+  color: #e8b7be !important;
+  font-size: 8px !important;
+}

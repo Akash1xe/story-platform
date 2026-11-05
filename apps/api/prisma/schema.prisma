@@ -62,6 +62,11 @@ enum ContentReportStatus {
   DISMISSED
 }
 
+enum ContentReportAction {
+  NONE
+  CONTENT_REMOVED
+}
+
 model User {
   id                String             @id @default(cuid())
   email             String             @unique
@@ -83,6 +88,7 @@ model User {
   followingCreators CreatorFollow[]    @relation("CreatorFollowing")
   creatorFollowers  CreatorFollow[]    @relation("CreatorFollowers")
   chapterCommentsAuthored ChapterComment[]
+  chapterCommentsRemoved  ChapterComment[] @relation("CommentRemovalActor")
   notifications          Notification[] @relation("NotificationRecipient")
   contentReportsFiled     ContentReport[] @relation("ContentReportReporter")
   contentReportsReviewed  ContentReport[] @relation("ContentReportReviewer")
@@ -265,14 +271,17 @@ model ModerationReview {
 
 
 model ChapterComment {
-  id        String   @id @default(cuid())
-  chapterId String
-  authorId  String
-  body      String   @db.VarChar(1500)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  chapterId  String
+  authorId   String
+  body       String    @db.VarChar(1500)
+  removedAt  DateTime?
+  removedById String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  chapter    Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  removedBy  User?     @relation("CommentRemovalActor", fields: [removedById], references: [id], onDelete: SetNull)
 
   @@index([chapterId, createdAt])
   @@index([authorId, createdAt])
@@ -307,6 +316,7 @@ model ContentReport {
   details        String?                 @db.VarChar(1000)
   status         ContentReportStatus     @default(PENDING)
   decisionNote   String?                 @db.VarChar(2000)
+  moderationAction ContentReportAction   @default(NONE)
   reviewedAt     DateTime?
   createdAt      DateTime                @default(now())
   updatedAt      DateTime                @updatedAt
