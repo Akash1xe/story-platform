@@ -17,6 +17,7 @@ type ApiChapter = {
   id: string;
   number: number;
   title: string;
+  summary: string | null;
   body: string | null;
   updatedAt: string;
   panels: ApiPanel[];
@@ -93,7 +94,7 @@ export type StoryDraftInput = {
   format: CreatorFormat;
   publicationStatus: "Ongoing" | "Completed";
   coverImage: string;
-  chapters: Array<Pick<CreatorChapter, "title" | "body" | "panelUrls" | "panelAltTexts" | "panelCaptions">>;
+  chapters: Array<Pick<CreatorChapter, "title" | "summary" | "body" | "panelUrls" | "panelAltTexts" | "panelCaptions">>;
 };
 
 const STORIES_ENDPOINT = "/api/v1/creator/stories";
@@ -135,6 +136,7 @@ export function fromApiStory(story: ApiStory): CreatorStory {
       return {
         id: chapter.id,
         title: chapter.title,
+        summary: chapter.summary ?? "",
         body: chapter.body ?? "",
         panelUrls: panels.map((panel) => panel.imageUrl),
         panelAltTexts: panels.map((panel) => panel.altText ?? ""),
