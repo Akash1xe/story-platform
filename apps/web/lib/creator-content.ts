@@ -3,6 +3,7 @@ export type CreatorReviewStatus = "Draft" | "In review" | "Approved" | "Changes 
 
 export type CreatorChapter = {
   id: string;
+  serverChapterId?: string;
   title: string;
   summary: string;
   body: string;

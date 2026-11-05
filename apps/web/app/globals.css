@@ -3102,3 +3102,153 @@ input:focus-visible {
   .reading-list-edit-fields { grid-template-columns: 1fr; }
   .reading-list-edit-form { width: 100%; }
 }
+
+
+/* Chapter reorder controls */
+.creator-chapter-order-button:disabled {
+  cursor: not-allowed;
+  opacity: .35;
+}
+
+
+/* Discover catalog: server-backed results, loading and pagination states */
+.discover-filter-hint {
+  margin: 0;
+  color: #858b9b;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.discover-result-summary {
+  margin: -3px 0 14px;
+  color: #858b9b;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.discover-results[aria-busy="true"] .discover-story-grid {
+  opacity: .58;
+  transition: opacity .18s ease;
+}
+.discover-loading,
+.discover-request-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 15px;
+  padding: 11px 13px;
+  border: 1px solid #383148;
+  border-radius: 9px;
+  background: #191725;
+  color: #d5c8f7;
+  font-size: 10px;
+}
+.discover-loading {
+  justify-content: flex-start;
+}
+.discover-request-error {
+  border-color: #614b3c;
+  background: #211c19;
+  color: #e2c4a9;
+}
+.discover-request-error button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid #6b5746;
+  border-radius: 6px;
+  background: #2a231e;
+  color: #f0d3b4;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 700;
+}
+.discover-spinner {
+  flex: 0 0 auto;
+  animation: discover-spin .9s linear infinite;
+}
+@keyframes discover-spin {
+  to { transform: rotate(360deg); }
+}
+.discover-loading-panel {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #303644;
+  border-radius: 14px;
+  background: #131822;
+  color: #c5b0ff;
+  text-align: center;
+}
+.discover-loading-panel strong {
+  color: #f0edf5;
+  font-size: 14px;
+}
+.discover-loading-panel span {
+  color: #9b9eac;
+  font-size: 10px;
+}
+.discover-error-state {
+  border-style: solid;
+  border-color: #614b3c;
+  color: #e2c4a9;
+}
+.discover-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid #2c3240;
+}
+.discover-pagination button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid #3a4050;
+  border-radius: 8px;
+  background: #171c27;
+  color: #ded8ec;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 650;
+  transition: border-color .15s, background .15s, opacity .15s;
+}
+.discover-pagination button:hover:not(:disabled) {
+  border-color: #8069c5;
+  background: #211d30;
+}
+.discover-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: .42;
+}
+.discover-pagination > span {
+  color: #9b9eac;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.discover-pagination > span strong {
+  color: #e9e3f5;
+}
+@media(max-width: 520px) {
+  .discover-pagination {
+    gap: 7px;
+  }
+  .discover-pagination button {
+    min-height: 36px;
+    padding: 0 9px;
+    font-size: 9px;
+  }
+  .discover-pagination > span {
+    font-size: 9px;
+    white-space: nowrap;
+  }
+}

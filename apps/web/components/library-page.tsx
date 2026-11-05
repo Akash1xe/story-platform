@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Bookmark, Clock3, Compass, LibraryBig } from "lucide-react";
+import { ArrowRight, Bookmark, Clock3, Compass, LibraryBig } from "lucide-react";
 import StoryCard from "@/components/story-card";
+import { SiteHeader } from "@/components/site-header";
 import NotificationBell from "@/components/notification-bell";
 import { useReaderLibrary } from "@/hooks/use-reader-library";
 import ReadingListsPanel from "@/components/reading-lists-panel";
@@ -14,11 +15,15 @@ export default function LibraryPage() {
   const { library, isReady, isAuthenticated, error } = useReaderLibrary();
   return (
     <>
-      <header className="site-header"><div className="header-inner">
-        <Link href="/" className="brand" aria-label="StoryWorld home"><span className="brand-icon"><BookOpen size={20} /></span><span>StoryWorld<span className="brand-period">.</span></span></Link>
-        <nav className="desktop-nav" aria-label="Main navigation"><Link href="/">Home</Link><Link href="/discover">Discover</Link><Link href="/#genres">Genres</Link><Link className="nav-active" href="/library">My Library</Link><Link href="/following">Following</Link></nav>
-        <div className="header-actions"><NotificationBell /><Link href="/discover" className="creator-button"><Compass size={14} /> Discover stories</Link></div>
-      </div></header>
+      <SiteHeader
+        active="library"
+        actions={
+          <>
+            <NotificationBell />
+            <Link href="/discover" className="creator-button"><Compass size={14} /> Discover stories</Link>
+          </>
+        }
+      />
       <main className="library-shell">
         <div className="library-heading"><div><span className="eyebrow">YOUR PERSONAL SPACE</span><h1>My Library</h1><p>Your saved stories and reading progress, synced to your account.</p></div><div className="library-heading-icon"><LibraryBig size={25} /></div></div>
         {!isReady ? <div className="library-loading" aria-live="polite">Loading your library…</div> : !isAuthenticated ? (

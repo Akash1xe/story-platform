@@ -15,7 +15,9 @@ import {
   UserRound,
 } from "lucide-react";
 import StoryCard from "@/components/story-card";
+import { SiteHeader } from "@/components/site-header";
 import NotificationBell from "@/components/notification-bell";
+import { MobileNavigation } from "@/components/mobile-navigation";
 import type { Story } from "@/lib/demo-content";
 import { useReaderLibrary } from "@/hooks/use-reader-library";
 import { fetchReaderRecommendations } from "@/lib/reader-library";
@@ -92,21 +94,10 @@ export default function HomePage({ stories, genres, catalogUnavailable = false }
 
   return (
     <>
-      <header className="site-header">
-        <div className="header-inner">
-          <Link href="/" className="brand" aria-label="StoryWorld home">
-            <span className="brand-icon"><BookOpen size={20} /></span>
-            <span>StoryWorld<span className="brand-period">.</span></span>
-          </Link>
-          <nav className="desktop-nav" aria-label="Main navigation">
-            <Link className="nav-active" href="/">Home</Link>
-            <Link href="/discover">Discover</Link>
-            <Link href="#genres">Genres</Link>
-            <Link href="/library">My Library</Link>
-            <Link href="/following">Following</Link>
-            <Link href="/creator">Creators</Link>
-          </nav>
-          <div className="header-actions">
+      <SiteHeader
+        active="home"
+        actions={
+          <>
             <NotificationBell />
             <label className="search-box">
               <Search size={16} aria-hidden="true" />
@@ -120,9 +111,9 @@ export default function HomePage({ stories, genres, catalogUnavailable = false }
             <Link href="/library" className="profile-button" aria-label="My Library">
               <UserRound size={18} />
             </Link>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main id="home" className="page-shell">
         {catalogUnavailable && (
@@ -312,12 +303,7 @@ export default function HomePage({ stories, genres, catalogUnavailable = false }
         </footer>
       </main>
 
-      <nav className="mobile-nav" aria-label="Mobile navigation">
-        <Link href="#home" className="mobile-nav-active"><BookOpen size={19} /><span>Home</span></Link>
-        <Link href="/discover"><Compass size={19} /><span>Discover</span></Link>
-        <Link href="/library"><Bookmark size={19} /><span>My Library</span></Link>
-        <Link href="/creator"><UserRound size={19} /><span>Creator</span></Link>
-      </nav>
+      <MobileNavigation active="home" />
     </>
   );
 }

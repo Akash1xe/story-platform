@@ -20,6 +20,12 @@ export type PublicStorySummary = {
   recommendationReason?: string;
 };
 
+export type PublicStoryCatalog = {
+  stories: PublicStorySummary[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+  genres: string[];
+};
+
 export type PublicStoryDetail = PublicStorySummary & {
   chapters: Array<{
     id: string;
@@ -78,46 +84,68 @@ function apiOrigin() {
   return (process.env.API_SERVER_URL ?? "http://localhost:4000").replace(/\/$/, "");
 }
 
+function catalogQuery(filters: CatalogFilters) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== "") params.set(key, String(value));
+  }
+  return params.toString();
+}
+
 async function fetchApi<T>(path: string): Promise<T> {
-  const response = await fetch(`${apiOrigin()}${path}`, {
+  const response = await fetch(apiOrigin() + path, {
     cache: "no-store",
     headers: { Accept: "application/json" },
   });
   if (!response.ok) {
     if (response.status === 404) return null as T;
-    throw new Error(`Story API request failed (${response.status}).`);
+    throw new Error("Story API request failed (" + response.status + ").");
   }
   return response.json() as Promise<T>;
 }
 
 export async function listPublicStories(filters: CatalogFilters = {}) {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(filters)) {
-    if (value !== undefined && value !== "") params.set(key, String(value));
+  const query = catalogQuery(filters);
+  return fetchApi<PublicStoryCatalog>("/api/v1/stories" + (query ? "?" + query : ""));
+}
+
+export async function fetchPublicStoryCatalog(
+  filters: CatalogFilters,
+  signal?: AbortSignal,
+): Promise<PublicStoryCatalog> {
+  const query = catalogQuery(filters);
+  const response = await fetch("/api/v1/stories" + (query ? "?" + query : ""), {
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      response.status >= 500
+        ? "The story catalog is temporarily unavailable. Please try again."
+        : "The story catalog request could not be completed.",
+    );
   }
-  const query = params.toString();
-  return fetchApi<{
-    stories: PublicStorySummary[];
-    pagination: { page: number; limit: number; total: number; totalPages: number };
-    genres: string[];
-  }>(`/api/v1/stories${query ? `?${query}` : ""}`);
+
+  return response.json() as Promise<PublicStoryCatalog>;
 }
 
 export async function getPublicStory(slug: string) {
   return fetchApi<{ story: PublicStoryDetail }>(
-    `/api/v1/stories/${encodeURIComponent(slug)}`,
+    "/api/v1/stories/" + encodeURIComponent(slug),
   );
 }
 
 export async function getPublicCreator(creatorId: string) {
   return fetchApi<{ creator: PublicCreatorProfile }>(
-    `/api/v1/creators/${encodeURIComponent(creatorId)}`,
+    "/api/v1/creators/" + encodeURIComponent(creatorId),
   );
 }
 
 export async function getPublicChapter(slug: string, chapterNumber: number) {
   return fetchApi<PublicStoryPageData>(
-    `/api/v1/stories/${encodeURIComponent(slug)}/chapters/${chapterNumber}`,
+    "/api/v1/stories/" + encodeURIComponent(slug) + "/chapters/" + chapterNumber,
   );
 }
 
