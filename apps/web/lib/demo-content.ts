@@ -29,6 +29,7 @@ export type Story = {
   status: "Ongoing" | "Completed";
   averageRating?: number | null;
   ratingCount?: number;
+  recommendationReason?: string;
   previewTitle: string;
   previewParagraphs: string[];
   comicPanels?: ComicPanel[];

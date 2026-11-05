@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -17,6 +17,8 @@ import {
 import StoryCard from "@/components/story-card";
 import NotificationBell from "@/components/notification-bell";
 import type { Story } from "@/lib/demo-content";
+import { useReaderLibrary } from "@/hooks/use-reader-library";
+import { fetchReaderRecommendations } from "@/lib/reader-library";
 
 type HomePageProps = {
   stories: Story[];
@@ -27,6 +29,42 @@ type HomePageProps = {
 export default function HomePage({ stories, genres, catalogUnavailable = false }: HomePageProps) {
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const { isReady: readerReady, isAuthenticated } = useReaderLibrary();
+  const [recommendedStories, setRecommendedStories] = useState<Story[]>([]);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(false);
+  const [recommendationsError, setRecommendationsError] = useState("");
+
+  useEffect(() => {
+    if (!readerReady) return;
+    let active = true;
+    if (!isAuthenticated) {
+      setRecommendedStories([]);
+      setRecommendationsLoading(false);
+      setRecommendationsError("");
+      return;
+    }
+    setRecommendationsLoading(true);
+    setRecommendationsError("");
+    fetchReaderRecommendations()
+      .then((items) => {
+        if (active) setRecommendedStories(items.map((item) => item.story));
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setRecommendationsError(
+            error instanceof Error
+              ? error.message
+              : "Personalized recommendations could not be loaded.",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setRecommendationsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [readerReady, isAuthenticated]);
 
   const featuredStory = stories[0] ?? null;
   const quickReads = useMemo(
@@ -163,6 +201,32 @@ export default function HomePage({ stories, genres, catalogUnavailable = false }
             <p className="empty-message">Published short stories will appear here.</p>
           )}
         </section>
+
+        {readerReady && isAuthenticated && (
+          <section className="section recommendations-section" aria-labelledby="recommendations-title">
+            <div className="section-heading">
+              <div>
+                <span className="eyebrow">BASED ON YOUR READING</span>
+                <h2 id="recommendations-title">Picked for you</h2>
+                <p>A mix of genre matches and fresh published stories.</p>
+              </div>
+              <span className="section-icon"><Sparkles size={21} /></span>
+            </div>
+            {recommendationsLoading ? (
+              <p className="empty-message" role="status">Finding stories you might enjoy…</p>
+            ) : recommendationsError ? (
+              <p className="empty-message" role="status">{recommendationsError}</p>
+            ) : recommendedStories.length ? (
+              <div className="story-grid">
+                {recommendedStories.map((story) => (
+                  <StoryCard key={story.id} story={story} />
+                ))}
+              </div>
+            ) : (
+              <p className="empty-message">You’re all caught up. New stories will appear here as the catalog grows.</p>
+            )}
+          </section>
+        )}
 
         <section className="section" id="collection">
           <div className="section-heading">

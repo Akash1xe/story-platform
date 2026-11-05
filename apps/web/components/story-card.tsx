@@ -28,6 +28,7 @@ export default function StoryCard({ story }: StoryCardProps) {
           ? <Link className="story-creator" href={`/creators/${story.creatorId}`}>by {story.creator}</Link>
           : <span className="story-creator">by {story.creator}</span>}
         <p>{story.description}</p>
+        {story.recommendationReason && <span className="story-recommendation-reason">{story.recommendationReason}</span>}
         <div className="story-meta">
           <span><Clock3 size={13} />{story.minutes} min read</span>
           {story.averageRating != null && (story.ratingCount ?? 0) > 0 && (
