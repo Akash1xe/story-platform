@@ -62,6 +62,28 @@ export type CreatorReviewHistoryResponse = {
   pagination: { page: number; limit: number; total: number; hasMore: boolean };
 };
 
+export type CreatorAnalyticsStory = {
+  id: string;
+  title: string;
+  slug: string;
+  format: "COMIC" | "NOVEL" | "SHORT_STORY";
+  publishedAt: string | null;
+  trackedReaders: number;
+  librarySaves: number;
+};
+
+export type CreatorAnalyticsResponse = {
+  summary: {
+    publishedStories: number;
+    followers: number;
+    trackedReaderAccounts: number;
+    activeReaderAccountsLast30Days: number;
+    librarySaves: number;
+  };
+  stories: CreatorAnalyticsStory[];
+  generatedAt: string;
+};
+
 export type StoryDraftInput = {
   title: string;
   synopsis: string;
@@ -194,4 +216,8 @@ export async function listCreatorReviews(page = 1, limit = 20): Promise<CreatorR
   return requestJson<CreatorReviewHistoryResponse>(
     `${STORIES_ENDPOINT}/reviews?page=${page}&limit=${limit}`,
   );
+}
+
+export async function getCreatorAnalytics(): Promise<CreatorAnalyticsResponse> {
+  return requestJson<CreatorAnalyticsResponse>(`${STORIES_ENDPOINT}/analytics`);
 }

@@ -459,7 +459,7 @@ export function CreatorEditor({ storyId }: CreatorWorkspaceProps) {
   );
 }
 
-export function CreatorHeader({ active }: { active: "studio" | "reviews" }) {
+export function CreatorHeader({ active }: { active: "studio" | "reviews" | "analytics" }) {
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -473,6 +473,7 @@ export function CreatorHeader({ active }: { active: "studio" | "reviews" }) {
           <Link href="/library">My Library</Link>
           <Link className={active === "studio" ? "nav-active" : ""} href="/creator">Creator Studio</Link>
           <Link className={active === "reviews" ? "nav-active" : ""} href="/creator/reviews">Review history</Link>
+          <Link className={active === "analytics" ? "nav-active" : ""} href="/creator/analytics">Analytics</Link>
           <Link href="/creator/profile">Profile settings</Link>
         </nav>
         <div className="header-actions">

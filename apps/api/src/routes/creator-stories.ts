@@ -224,6 +224,92 @@ router.post("/", async (request, response, next) => {
   }
 });
 
+router.get("/analytics", async (_request, response, next) => {
+  try {
+    const session = getSession(response);
+    const publishedStories = await prisma.story.findMany({
+      where: {
+        authorId: session.user.id,
+        status: "PUBLISHED",
+        chapters: { some: { isPublished: true } },
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        format: true,
+        publishedAt: true,
+        _count: {
+          select: {
+            libraryEntries: true,
+            readingProgress: {
+              where: {
+                chapterId: { not: null },
+                chapter: { is: { isPublished: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
+    });
+
+    const storyIds = publishedStories.map((story) => story.id);
+    const progressWhere = {
+      storyId: { in: storyIds },
+      chapterId: { not: null },
+      chapter: { is: { isPublished: true } },
+    };
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const [followers, trackedReaders, activeReaders] = await prisma.$transaction([
+      prisma.creatorFollow.count({
+        where: { creatorId: session.user.id },
+      }),
+      prisma.readingProgress.findMany({
+        where: progressWhere,
+        select: { userId: true },
+        distinct: ["userId"],
+      }),
+      prisma.readingProgress.findMany({
+        where: { ...progressWhere, lastReadAt: { gte: thirtyDaysAgo } },
+        select: { userId: true },
+        distinct: ["userId"],
+      }),
+    ]);
+
+    const stories = publishedStories
+      .map((story) => ({
+        id: story.id,
+        title: story.title,
+        slug: story.slug,
+        format: story.format,
+        publishedAt: story.publishedAt,
+        trackedReaders: story._count.readingProgress,
+        librarySaves: story._count.libraryEntries,
+      }))
+      .sort((left, right) =>
+        right.trackedReaders - left.trackedReaders ||
+        right.librarySaves - left.librarySaves ||
+        (right.publishedAt?.getTime() ?? 0) - (left.publishedAt?.getTime() ?? 0),
+      );
+
+    response.status(200).json({
+      summary: {
+        publishedStories: publishedStories.length,
+        followers,
+        trackedReaderAccounts: trackedReaders.length,
+        activeReaderAccountsLast30Days: activeReaders.length,
+        librarySaves: stories.reduce((total, story) => total + story.librarySaves, 0),
+      },
+      stories: stories.slice(0, 10),
+      generatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/reviews", async (request, response, next) => {
   try {
     const pagination = z.object({
