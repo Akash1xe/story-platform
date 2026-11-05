@@ -17,20 +17,29 @@ export default function NotificationBell() {
     }
 
     let active = true;
-    void fetch("/api/v1/notifications?limit=1", {
-      credentials: "include",
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-    }).then(async (response) => {
-      if (!response.ok) return null;
-      return await response.json() as { unreadCount: number };
-    }).then((result) => {
-      if (active && result) setUnreadCount(result.unreadCount);
-    }).catch(() => {
-      if (active) setUnreadCount(0);
-    });
+    const refreshCount = () => {
+      void fetch("/api/v1/notifications?limit=1", {
+        credentials: "include",
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      }).then(async (response) => {
+        if (!response.ok) return null;
+        return await response.json() as { unreadCount: number };
+      }).then((result) => {
+        if (active && result) setUnreadCount(result.unreadCount);
+      }).catch(() => {
+        if (active) setUnreadCount(0);
+      });
+    };
 
-    return () => { active = false; };
+    refreshCount();
+    window.addEventListener("focus", refreshCount);
+    window.addEventListener("storyworld:notifications-updated", refreshCount);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refreshCount);
+      window.removeEventListener("storyworld:notifications-updated", refreshCount);
+    };
   }, [isPending, session?.user.id]);
 
   if (isPending || !session) return null;
