@@ -1,13 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Clock3, Compass, Sparkles } from "lucide-react";
+import { Bookmark, BookOpen, Clock3, Compass, Sparkles, UserRound } from "lucide-react";
 
 type MobileNavigationProps = {
   active: "home" | "discover";
 };
 
-const items = [
+const homeItems = [
+  { id: "home", href: "#home", label: "Home", icon: BookOpen },
+  { id: "discover", href: "/discover", label: "Discover", icon: Compass },
+  { id: "library", href: "/library", label: "My Library", icon: Bookmark },
+  { id: "creator", href: "/creator", label: "Creator", icon: UserRound },
+] as const;
+
+const discoverItems = [
   { id: "home", href: "/", label: "Home", icon: BookOpen },
   { id: "discover", href: "/discover", label: "Discover", icon: Compass },
   { id: "library", href: "/library", label: "My Library", icon: Clock3 },
@@ -15,6 +22,8 @@ const items = [
 ] as const;
 
 export function MobileNavigation({ active }: MobileNavigationProps) {
+  const items = active === "home" ? homeItems : discoverItems;
+
   return (
     <nav className="mobile-nav" aria-label="Mobile navigation">
       {items.map(({ id, href, label, icon: Icon }) => {
