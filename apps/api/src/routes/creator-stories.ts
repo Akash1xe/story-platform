@@ -224,6 +224,58 @@ router.post("/", async (request, response, next) => {
   }
 });
 
+router.get("/reviews", async (request, response, next) => {
+  try {
+    const pagination = z.object({
+      page: z.coerce.number().int().min(1).max(1000).default(1),
+      limit: z.coerce.number().int().min(1).max(50).default(20),
+    }).safeParse(request.query);
+
+    if (!pagination.success) {
+      response.status(400).json({
+        error: { code: "INVALID_PAGINATION", message: "Page must be positive and limit must be between 1 and 50." },
+      });
+      return;
+    }
+
+    const session = getSession(response);
+    const where = { story: { is: { authorId: session.user.id } } };
+    const { page, limit } = pagination.data;
+    const [reviews, total] = await prisma.$transaction([
+      prisma.moderationReview.findMany({
+        where,
+        select: {
+          id: true,
+          decision: true,
+          note: true,
+          createdAt: true,
+          reviewer: { select: { id: true, displayName: true } },
+          story: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              format: true,
+              status: true,
+            },
+          },
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.moderationReview.count({ where }),
+    ]);
+
+    response.status(200).json({
+      reviews,
+      pagination: { page, limit, total, hasMore: page * limit < total },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/:storyId", async (request, response, next) => {
   try {
     const session = getSession(response);

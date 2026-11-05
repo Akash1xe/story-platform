@@ -1,0 +1,47 @@
+.shell { width: min(960px, calc(100% - 40px)); margin: 0 auto; padding: 25px 0 76px; }
+.back { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 22px; color: #aaa6b8; font-size: 10px; }
+.back:hover { color: #f1ecfb; }
+.hero { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 28px 30px; border: 1px solid #463b59; border-radius: 16px; background: radial-gradient(circle at 90% 10%, #8e6bd52b, transparent 33%), linear-gradient(110deg, #211a30, #171b27); }
+.eyebrow { display: inline-flex; align-items: center; gap: 7px; color: #c5b0ff; font-size: 9px; font-weight: 800; letter-spacing: 1.4px; }
+.hero h1 { margin: 10px 0 6px; color: #f2eef8; font-size: clamp(29px, 4vw, 38px); letter-spacing: -1.4px; }
+.hero p { margin: 0; color: #b3b1bf; font-size: 11px; line-height: 1.7; }
+.heroIcon { width: 58px; height: 58px; flex: 0 0 58px; display: grid; place-items: center; border: 1px solid #5a4b75; border-radius: 15px; background: #29223a; color: #d8cbff; }
+.summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 25px 2px 12px; color: #8e95a4; font-size: 9px; }
+.summary span:first-child { display: inline-flex; align-items: center; gap: 7px; color: #c6c0d2; }
+.error { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 14px; padding: 10px 12px; border: 1px solid #694448; border-radius: 8px; background: #2a1b21; color: #e6b2b7; font-size: 10px; line-height: 1.6; }
+.state { min-height: 220px; display: flex; align-items: center; justify-content: center; gap: 9px; color: #a8adba; font-size: 11px; }
+.empty { min-height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; border: 1px dashed #3a4050; border-radius: 15px; background: #121722; text-align: center; }
+.empty > span { width: 54px; height: 54px; display: grid; place-items: center; border: 1px solid #51466b; border-radius: 15px; background: #221d32; color: #cbbaff; }
+.empty h2 { margin: 15px 0 6px; color: #f0edf5; font-size: 16px; }
+.empty p { max-width: 390px; margin: 0; color: #9ca1af; font-size: 10px; line-height: 1.7; }
+.primaryLink { display: inline-flex; align-items: center; gap: 7px; margin-top: 18px; padding: 10px 13px; border-radius: 7px; background: #a78bfa; color: #191323; font-size: 10px; font-weight: 750; }
+.list { display: flex; flex-direction: column; gap: 11px; }
+.review { padding: 17px 18px; border: 1px solid #303745; border-radius: 12px; background: #151a24; }
+.reviewTop { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.reviewTop time { color: #8d93a1; font-size: 8px; }
+.approved, .changes { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid #3b5c49; border-radius: 20px; background: #19271f; color: #b0d7bd; font-size: 8px; font-weight: 750; }
+.changes { border-color: #6a4c38; background: #2b211b; color: #e7bd91; }
+.storyRow { display: flex; align-items: center; gap: 11px; }
+.storyIcon { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border: 1px solid #3d4052; border-radius: 9px; background: #1d2130; color: #c9b9ff; }
+.storyInfo { min-width: 0; flex: 1; }
+.storyInfo h2 { margin: 0; color: #eeeaf5; font-size: 12px; overflow-wrap: anywhere; }
+.storyInfo p { margin: 5px 0 0; color: #8e95a4; font-size: 8px; }
+.storyInfo p span { padding: 0 4px; color: #625a73; }
+.storyLink { display: inline-flex; align-items: center; gap: 5px; color: #c1aff8; font-size: 9px; white-space: nowrap; }
+.storyLink:hover { color: #e3d8ff; }
+.feedback { margin-top: 14px; padding: 12px 13px; border: 1px solid #303745; border-radius: 8px; background: #10151e; }
+.feedback strong { color: #d8d1e6; font-size: 9px; }
+.feedback p { margin: 6px 0 0; color: #b6b4c1; font-size: 10px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.loadMore { min-height: 39px; display: flex; align-items: center; justify-content: center; gap: 7px; margin: 19px auto 0; padding: 0 16px; border: 1px solid #47405b; border-radius: 8px; background: #1d1a2b; color: #cabaff; cursor: pointer; font: inherit; font-size: 10px; font-weight: 700; }
+.loadMore:disabled { cursor: wait; opacity: .65; }
+.spinner { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media(max-width: 620px) {
+  .shell { width: calc(100% - 30px); padding-top: 18px; }
+  .hero { padding: 22px 18px; }
+  .review { padding: 14px; }
+  .storyRow { align-items: flex-start; flex-wrap: wrap; }
+  .storyInfo { min-width: calc(100% - 55px); }
+  .storyLink { margin-left: 51px; }
+  .summary { align-items: flex-start; flex-direction: column; }
+}

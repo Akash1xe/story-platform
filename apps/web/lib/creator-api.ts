@@ -42,6 +42,26 @@ export type ApiStory = {
   }>;
 };
 
+export type CreatorReviewEntry = {
+  id: string;
+  decision: "APPROVED" | "CHANGES_REQUESTED";
+  note: string | null;
+  createdAt: string;
+  reviewer: { id: string; displayName: string };
+  story: {
+    id: string;
+    title: string;
+    slug: string;
+    format: "COMIC" | "NOVEL" | "SHORT_STORY";
+    status: "DRAFT" | "IN_REVIEW" | "PUBLISHED" | "ARCHIVED";
+  };
+};
+
+export type CreatorReviewHistoryResponse = {
+  reviews: CreatorReviewEntry[];
+  pagination: { page: number; limit: number; total: number; hasMore: boolean };
+};
+
 export type StoryDraftInput = {
   title: string;
   synopsis: string;
@@ -168,4 +188,10 @@ export async function submitCreatorStory(storyId: string): Promise<CreatorStory>
   );
 
   return fromApiStory(response.story);
+}
+
+export async function listCreatorReviews(page = 1, limit = 20): Promise<CreatorReviewHistoryResponse> {
+  return requestJson<CreatorReviewHistoryResponse>(
+    `${STORIES_ENDPOINT}/reviews?page=${page}&limit=${limit}`,
+  );
 }
