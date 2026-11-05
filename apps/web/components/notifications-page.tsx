@@ -92,6 +92,7 @@ export default function NotificationsPage() {
         notification.id === notificationId ? { ...notification, readAt } : notification
       ));
       setUnreadCount((current) => Math.max(0, current - 1));
+      window.dispatchEvent(new Event("storyworld:notifications-updated"));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "This notification could not be updated.");
     } finally {
@@ -115,6 +116,7 @@ export default function NotificationsPage() {
         notification.readAt ? notification : { ...notification, readAt }
       ));
       setUnreadCount(0);
+      window.dispatchEvent(new Event("storyworld:notifications-updated"));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Notifications could not be updated.");
     } finally {
