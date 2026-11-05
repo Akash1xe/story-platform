@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BookOpen, Minus, Plus, Sun } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import type { PublicStoryPageData } from "@/lib/public-stories";
 import ChapterComments from "@/components/chapter-comments";
+import { useReadingProgress } from "@/hooks/use-reading-progress";
 
 type PublicStoryReaderProps = { data: PublicStoryPageData };
 export default function PublicStoryReader({ data }: PublicStoryReaderProps) {
@@ -14,61 +15,7 @@ export default function PublicStoryReader({ data }: PublicStoryReaderProps) {
   const { story, chapter } = data;
   const isComic = story.format === "COMIC";
 
-  useEffect(() => {
-    if (isPending || !session) return;
-    let timeout: ReturnType<typeof setTimeout> | undefined;
-    let disposed = false;
-    let lastSavedPercent = -1;
-
-    const saveProgress = () => {
-      const root = document.documentElement;
-      const maxScroll = Math.max(0, root.scrollHeight - window.innerHeight);
-      const ratio = maxScroll === 0 ? 0 : Math.min(1, Math.max(0, window.scrollY / maxScroll));
-      const percent = Math.round(ratio * 100);
-      if (percent === lastSavedPercent) return;
-      if (timeout) clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        lastSavedPercent = percent;
-        void fetch(`/api/v1/reading-progress/${encodeURIComponent(chapter.id)}`, {
-          method: "PUT", credentials: "include",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({ progressRatio: ratio }),
-        });
-      }, 900);
-    };
-
-    const attachListeners = () => {
-      if (disposed) return;
-      window.addEventListener("scroll", saveProgress, { passive: true });
-      window.addEventListener("resize", saveProgress);
-      saveProgress();
-    };
-
-    void fetch(`/api/v1/reading-progress/${encodeURIComponent(chapter.id)}`, {
-      credentials: "include", cache: "no-store",
-    }).then(async (response) => {
-      if (!response.ok) return null;
-      return await response.json() as { progress: { progressRatio: number } | null };
-    }).then((result) => {
-      if (disposed) return;
-      const ratio = result?.progress?.progressRatio ?? 0;
-      requestAnimationFrame(() => {
-        if (disposed) return;
-        const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-        window.scrollTo({ top: maxScroll * ratio, behavior: "auto" });
-        requestAnimationFrame(attachListeners);
-      });
-    }).catch(() => {
-      attachListeners();
-    });
-
-    return () => {
-      disposed = true;
-      window.removeEventListener("scroll", saveProgress);
-      window.removeEventListener("resize", saveProgress);
-      if (timeout) clearTimeout(timeout);
-    };
-  }, [chapter.id, isPending, session]);
+  useReadingProgress(chapter.id, isComic, !isPending && Boolean(session));
 
   return (
     <div className={paperTheme ? "reader-page reader-page--paper" : "reader-page"}>
